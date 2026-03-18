@@ -1,0 +1,24 @@
+[package]
+name = "model-checker"
+version = "0.1.0"
+authors = ["neeleshpoli <72574589+neeleshpoli@users.noreply.github.com>"]
+edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dioxus = { version = "0.7.1", features = ["router"] }
+ai-core = { path = "./ai-core"}
+anyhow.workspace = true
+
+[workspace]
+members = ["ai-core"]
+
+[workspace.dependencies]
+anyhow = "1.0"
+
+[features]
+default = ["desktop"]
+web = ["dioxus/web"]
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]

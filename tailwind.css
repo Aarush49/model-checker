@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    @apply h-full;
+  }
+  header {
+    @apply py-2;
+  }
+  main {
+    @apply px-2 flex-1;
+  }
+  body {
+    @apply bg-white dark:bg-gray-900 text-black dark:text-white h-full overflow-hidden;
+  }
+  h1 {
+    @apply text-4xl font-bold;
+  }
+}
