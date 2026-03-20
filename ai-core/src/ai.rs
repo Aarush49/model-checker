@@ -1,7 +1,7 @@
 use anyhow::{Ok, Result, anyhow};
 use async_trait::async_trait;
 
-use crate::providers::gemini::Gemini;
+use crate::providers::{gemini::Gemini, phi::Phi};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ComputeMode {
@@ -58,10 +58,15 @@ impl Models {
     }
 
     pub async fn load_models() -> Result<Self> {
-        let http_client = reqwest::Client::new();
+        let http_client = reqwest::Client::builder()
+            .user_agent("ModelChecker/1.0 (Rust reqwest)")
+            .build()?;
 
         Ok(Self {
-            models: vec![Box::new(Gemini::new(&http_client).await?)],
+            models: vec![
+                // Box::new(Gemini::new(&http_client).await?),
+                Box::new(Phi::new(&http_client).await),
+            ],
         })
     }
 

@@ -104,18 +104,26 @@ fn ChatPage() -> Element {
     let mut prompt = use_signal(String::new);
     let models_registry = use_context::<Signal<Models>>();
 
-    let send_message = move |_| {
-        if !prompt().is_empty() {
+    // 1. Remove the `|_|` argument so it can be called from anywhere
+    let mut send_message = move || {
+        // 2. CAPTURE THE TEXT NOW, before the async boundary
+        let current_prompt = prompt().clone(); 
+
+        if !current_prompt.is_empty() {
             let user_msg = Message {
                 sender: "User".to_string(),
-                content: prompt().clone(),
+                content: current_prompt.clone(),
             };
             messages.write().push(user_msg);
 
+            // 3. Clear the UI immediately so it feels snappy
+            prompt.set(String::new());
+
+            // 4. Move the ALREADY CLONED text into the background task
             spawn(async move {
                 let responses = models_registry
                     .read()
-                    .ask(prompt.read().clone())
+                    .ask(current_prompt) // Use the captured string here!
                     .await
                     .unwrap();
 
@@ -124,8 +132,6 @@ fn ChatPage() -> Element {
                     content: responses.iter().map(|model| model.1.clone()).collect(),
                 });
             });
-
-            prompt.set(String::new());
         }
     };
 
@@ -157,14 +163,15 @@ fn ChatPage() -> Element {
                         onkeydown: move |event| {
                             if event.key() == Key::Enter && !event.modifiers().contains(Modifiers::SHIFT) {
                                 event.prevent_default();
-
-                                // send_message();
+                                // 5. Now you can safely call this from the Enter key!
+                                send_message();
                             }
                         },
                     }
                     button {
                         class: "bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500",
-                        onclick: send_message,
+                        // 6. Wrap in a dummy closure to ignore the MouseData event
+                        onclick: move |_| send_message(),
                         "Send"
                     }
                 }

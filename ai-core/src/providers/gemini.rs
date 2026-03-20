@@ -26,6 +26,8 @@ impl Gemini {
             auth_uri: "https://accounts.google.com/o/oauth2/v2/auth".to_string(),
             token_uri: "https://oauth2.googleapis.com/token".to_string(),
             scopes: vec![
+                "https://www.googleapis.com/auth/cloud-platform".to_string(),
+                "https://www.googleapis.com/auth/generative-language.retriever".to_string(),
                 "https://www.googleapis.com/auth/generative-language.peruserquota".to_string(),
             ],
             // These parameters are required to get a referesh token
@@ -45,7 +47,10 @@ impl Gemini {
             Err(_) => ProviderStatus::RequiresAuth,
         };
 
-        Ok(Self { oauth, status: RwLock::new(status) })
+        Ok(Self {
+            oauth,
+            status: RwLock::new(status),
+        })
     }
 }
 
@@ -72,7 +77,8 @@ impl ModelProvider for Gemini {
     }
 
     async fn ask(&self, prompt: &String) -> Result<String> {
-        const URL: &str = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+        const URL: &str =
+            "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
 
         let payload = json!({
             "contents": [{
@@ -80,7 +86,11 @@ impl ModelProvider for Gemini {
             }]
         });
 
-        let request = self.oauth.post(URL).json(&payload);
+        let request = self
+            .oauth
+            .post(URL)
+            .json(&payload)
+            .header("x-goog-user-project", env!("GOOGLE_PROJECT_ID"));
         let response = self.oauth.make_request::<GeminiResponse>(request).await?;
 
         let answer = response
