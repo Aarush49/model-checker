@@ -1,0 +1,161 @@
+﻿cargo :    Compiling 
+ai-core v0.1.0 (C:\Use
+rs\aarus\Desktop\model
+-checker\ai-core)
+At line:1 char:1
++ cargo check --color 
+never 2>&1 | Out-File 
+-Encoding utf8 
+build2.txt
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (   Compili   
+ ng ai...hecker\ai    
+-core):String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+warning: unused 
+import: 
+`gemini::Gemini`
+ --> 
+ai-core\src\ai.rs:4:24
+  |
+4 | use crate::provide
+rs::{gemini::Gemini, 
+phi::Phi};
+  |                   
+     ^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unus
+ed_imports)]` (part 
+of `#[warn(unused)]`) 
+on by default
+
+warning: unused 
+import: `DirectML`
+  --> ai-core\src\loca
+l.rs:12:15
+   |
+12 |     ep::{CPU, 
+DirectML, QNN},
+   |               
+^^^^^^^^
+
+warning: `ai-core` 
+(lib) generated 2 
+warnings (run `cargo 
+fix --lib -p ai-core` 
+to apply 2 
+suggestions)
+    Checking 
+model-checker v0.1.0 (
+C:\Users\aarus\Desktop
+\model-checker)
+error[E0716]: 
+temporary value 
+dropped while borrowed
+   --> src\neural_engi
+nes.rs:24:18
+    |
+  8 | /     rsx! {
+  9 | |         main 
+{ class: "ml-64 pt-24 
+pb-12 px-12 
+min-h-screen 
+bg-background 
+overflow-y-auto",
+ 10 | |             
+// Editorial Header
+ 11 | |             
+section { class: 
+"mb-12",
+...   |
+ 24 | |               
+  {models_registry.rea
+d().models.iter().enum
+erate().map(|(index, 
+model)| {
+    | |               
+   ^^^^^^^^^^^^^^^^^^^
+^^^ creates a 
+temporary value which 
+is freed while still 
+in use
+...   |
+ 93 | |               
+  } })}
+    | |               
+     - temporary 
+value is freed at the 
+end of this statement
+...   |
+195 | |     }
+    | |_____- borrow 
+later used by call
+    |
+    = note: consider 
+using a `let` binding 
+to create a longer 
+lived value
+
+error[E0716]: 
+temporary value 
+dropped while borrowed
+   --> src\orchestrato
+r.rs:58:22
+    |
+ 35 | /     rsx! {
+ 36 | |         main 
+{ class: "ml-64 pt-16 
+h-screen flex 
+flex-col bg-surface",
+ 37 | |             
+// Model Selector Row
+ 38 | |             
+section { class: 
+"px-8 py-6 bg-surface-
+container-low/50 
+shrink-0",
+...   |
+ 58 | |               
+      {models_registry
+.read().models.iter().
+enumerate().map(|(inde
+x, model)| {
+    | |               
+       ^^^^^^^^^^^^^^^
+^^^^^^^ creates a 
+temporary value which 
+is freed while still 
+in use
+...   |
+ 91 | |               
+      } })}
+    | |               
+         - temporary 
+value is freed at the 
+end of this statement
+...   |
+198 | |     }
+    | |_____- borrow 
+later used by call
+    |
+    = note: consider 
+using a `let` binding 
+to create a longer 
+lived value
+
+For more information 
+about this error, try 
+`rustc --explain 
+E0716`.
+error: could not 
+compile 
+`model-checker` (bin 
+"model-checker") due 
+to 2 previous errors

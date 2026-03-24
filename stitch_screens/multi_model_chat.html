@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-fixed": "#ff8cbc",
+                        "secondary-fixed": "#26e6ff",
+                        "on-background": "#dde5ff",
+                        "tertiary-dim": "#ec77aa",
+                        "secondary-fixed-dim": "#00d7f0",
+                        "secondary-dim": "#00d4ec",
+                        "tertiary-fixed-dim": "#f37daf",
+                        "on-secondary": "#004d57",
+                        "on-primary": "#2f0095",
+                        "on-surface-variant": "#a3abc3",
+                        "on-primary-fixed-variant": "#2c008f",
+                        "on-secondary-container": "#e8fbff",
+                        "on-primary-fixed": "#000000",
+                        "primary-dim": "#765bee",
+                        "on-tertiary-fixed-variant": "#6f1043",
+                        "on-error": "#490013",
+                        "surface-container-lowest": "#000000",
+                        "on-error-container": "#ffb2b9",
+                        "on-secondary-fixed-variant": "#005964",
+                        "surface-bright": "#1f2b48",
+                        "inverse-surface": "#faf8ff",
+                        "tertiary": "#ff9ac3",
+                        "on-tertiary-fixed": "#37001e",
+                        "outline-variant": "#40485c",
+                        "on-primary-container": "#230076",
+                        "primary": "#b1a1ff",
+                        "surface-container-highest": "#19253f",
+                        "surface-dim": "#060e20",
+                        "primary-container": "#a391ff",
+                        "error-container": "#a70138",
+                        "secondary-container": "#006875",
+                        "surface-tint": "#b1a1ff",
+                        "secondary": "#00e3fd",
+                        "primary-fixed-dim": "#9680ff",
+                        "tertiary-container": "#fc84b7",
+                        "on-surface": "#dde5ff",
+                        "error-dim": "#d73357",
+                        "inverse-primary": "#6043d7",
+                        "surface-container-high": "#141f37",
+                        "on-tertiary": "#6b0c40",
+                        "surface-variant": "#19253f",
+                        "surface-container": "#0f192f",
+                        "on-tertiary-container": "#5c0035",
+                        "background": "#060e20",
+                        "surface-container-low": "#091327",
+                        "error": "#ff6e84",
+                        "on-secondary-fixed": "#003a42",
+                        "inverse-on-surface": "#4d556a",
+                        "outline": "#6d758b",
+                        "primary-fixed": "#a391ff",
+                        "surface": "#060e20"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(25, 37, 63, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .ai-pulse {
+            box-shadow: 0 0 20px rgba(0, 227, 253, 0.1);
+        }
+        body {
+            background-color: #060e20;
+            color: #dde5ff;
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col bg-[#091328] py-6 z-50">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-gradient-to-br from-primary to-primary-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-sm" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight text-[#dee5ff] font-['Space_Grotesk']">Lumina AI</h1>
+<p class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-medium">Synthetic Curator</p>
+</div>
+</div>
+<div class="px-4 mb-8">
+<button class="w-full py-3 px-4 bg-gradient-to-r from-primary to-primary-dim text-on-primary font-bold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+<span class="font-label">New Session</span>
+</button>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="text-[#5D3FD3] bg-[#141f38] rounded-lg mx-2 flex items-center gap-3 px-4 py-3 transition-all duration-200 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble" data-weight="fill" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="font-body font-medium">Orchestrator</span>
+</a>
+<a class="text-[#dee5ff]/60 hover:text-[#dee5ff] px-4 py-3 mx-2 flex items-center gap-3 hover:bg-[#141f38] transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="compare_arrows">compare_arrows</span>
+<span class="font-body font-medium">Benchmarking</span>
+</a>
+<a class="text-[#dee5ff]/60 hover:text-[#dee5ff] px-4 py-3 mx-2 flex items-center gap-3 hover:bg-[#141f38] transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+<span class="font-body font-medium">Neural Engines</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant/10 space-y-1">
+<a class="text-[#dee5ff]/60 hover:text-[#dee5ff] px-6 py-2 flex items-center gap-3 hover:bg-[#141f38] transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="description">description</span>
+<span class="text-sm font-label">Documentation</span>
+</a>
+<a class="text-[#dee5ff]/60 hover:text-[#dee5ff] px-6 py-2 flex items-center gap-3 hover:bg-[#141f38] transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="help">help</span>
+<span class="text-sm font-label">Support</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-[#060e20]/80 backdrop-blur-xl flex justify-between items-center px-8 shadow-xl shadow-[#060e20]/40">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 bg-surface-container-highest/50 px-4 py-1.5 rounded-full border border-outline-variant/20">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-48 font-body" placeholder="Search Workspace Alpha..." type="text"/>
+</div>
+<nav class="flex items-center gap-6">
+<a class="text-[#5D3FD3] font-bold border-b-2 border-[#5D3FD3] pb-1 text-sm font-label" href="#">Models</a>
+<a class="text-[#dee5ff]/70 hover:text-[#dee5ff] transition-colors text-sm font-label" href="#">Datasets</a>
+<a class="text-[#dee5ff]/70 hover:text-[#dee5ff] transition-colors text-sm font-label" href="#">Logs</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center text-[#dee5ff]/70 hover:text-[#5D3FD3] transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-[#dee5ff]/70 hover:text-[#5D3FD3] transition-all">
+<span class="material-symbols-outlined" data-icon="dns">dns</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden border border-primary/30">
+<img alt="User Profile" data-alt="close up headshot portrait of a minimalist digital avatar icon with soft violet highlights on a dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTLrvgNJStoH4a614OGFDTHE-rKQD3PaRIyzgDp7aRLwW1fgqBoBZP6sfCvdYNtuv2tzqYKKIOghhiWOwqoVC4pkcD4TEgFSlf3D7FPjhL2EdU9Pp4o0VkKKi62NU0H8rmbYsIS4JhWrPf_3yT1yPKhXy82Eyd_RXvkv4bkMEKZTWGx_uSU9X2mqs_VaZk8lUEujTsSVG5RrwExevKJFiz1umwrPV-yiUK7erlF7jRPxiD79cUMRni32g61h7F-vUmfxx04D1pF34"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-64 pt-16 h-screen flex flex-col bg-surface">
+<!-- Model Selector Row -->
+<section class="px-8 py-6 bg-surface-container-low/50">
+<div class="flex items-center justify-between mb-4">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-widest text-secondary font-bold font-label mb-1">Active Ensemble</span>
+<h2 class="text-2xl font-headline font-bold text-on-surface">Orchestrator</h2>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-on-surface-variant font-label mr-2">3 Models Loaded</span>
+<button class="p-2 rounded-lg bg-surface-container-highest border border-outline-variant/30 text-on-surface">
+<span class="material-symbols-outlined text-sm" data-icon="tune">tune</span>
+</button>
+</div>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+<!-- GPT-4 Card -->
+<div class="flex-shrink-0 w-64 p-4 rounded-xl bg-surface-container border-2 border-primary/40 flex flex-col gap-3 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary text-xs" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="bolt">bolt</span>
+</div>
+<div>
+<h3 class="font-bold text-sm font-headline">GPT-4 Turbo</h3>
+<p class="text-[10px] text-on-surface-variant">OpenAI • reasoning-heavy</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-2">
+<span class="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded uppercase font-bold tracking-tighter">Pro</span>
+<div class="flex gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+</div>
+</div>
+</div>
+<!-- Claude Card -->
+<div class="flex-shrink-0 w-64 p-4 rounded-xl bg-surface-container border-2 border-primary/40 flex flex-col gap-3 relative">
+<div class="absolute top-0 right-0 p-2">
+<span class="material-symbols-outlined text-primary text-xs" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary" data-icon="psychology">psychology</span>
+</div>
+<div>
+<h3 class="font-bold text-sm font-headline">Claude 3.5 Sonnet</h3>
+<p class="text-[10px] text-on-surface-variant">Anthropic • lyrical-expert</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-2">
+<span class="text-[10px] bg-tertiary/10 text-tertiary px-2 py-0.5 rounded uppercase font-bold tracking-tighter">New</span>
+<div class="flex gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary/30"></div>
+</div>
+</div>
+</div>
+<!-- Gemini Card -->
+<div class="flex-shrink-0 w-64 p-4 rounded-xl bg-surface-container border-2 border-primary/40 flex flex-col gap-3 relative">
+<div class="absolute top-0 right-0 p-2">
+<span class="material-symbols-outlined text-primary text-xs" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="hub">hub</span>
+</div>
+<div>
+<h3 class="font-bold text-sm font-headline">Gemini 1.5 Pro</h3>
+<p class="text-[10px] text-on-surface-variant">Google • large-context</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-2">
+<span class="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded uppercase font-bold tracking-tighter">Fast</span>
+<div class="flex gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary/30"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary/30"></div>
+</div>
+</div>
+</div>
+<!-- Add More Button -->
+<button class="flex-shrink-0 w-24 rounded-xl border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center gap-2 hover:bg-surface-container-highest hover:border-primary/50 transition-all group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors" data-icon="add_circle">add_circle</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant group-hover:text-on-surface">Models</span>
+</button>
+</div>
+</section>
+<!-- Chat Area -->
+<div class="flex-1 overflow-y-auto px-8 pb-32 pt-6">
+<div class="max-w-4xl mx-auto space-y-12">
+<!-- User Message -->
+<div class="flex flex-col items-end gap-2 group">
+<div class="max-w-[80%] bg-surface-container-highest px-6 py-4 rounded-2xl rounded-tr-none border border-outline-variant/20 shadow-lg">
+<p class="text-on-surface font-body leading-relaxed">Analyze the potential impact of quantum computing on modern cryptographic protocols and suggest a migration timeline for financial institutions.</p>
+</div>
+<span class="text-[10px] text-on-surface-variant font-label opacity-0 group-hover:opacity-100 transition-opacity">Just now • Orchestrated Request</span>
+</div>
+<!-- Model Responses Container -->
+<div class="space-y-6">
+<!-- GPT-4 Response Card -->
+<div class="bg-surface-container p-6 rounded-2xl border border-primary/20 ai-pulse relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="bolt">bolt</span>
+<span class="font-headline font-bold text-sm tracking-tight text-on-surface">GPT-4 Turbo</span>
+<div class="h-1 w-1 rounded-full bg-outline-variant"></div>
+<span class="text-[10px] text-on-surface-variant font-label uppercase">Reasoning Complete</span>
+</div>
+<div class="flex items-center gap-4 text-[10px] font-mono text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="speed">speed</span> 2,401 ms</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="data_usage">data_usage</span> 842 tokens</span>
+</div>
+</div>
+<div class="space-y-4 font-body text-on-surface/90 leading-relaxed text-sm">
+<p>Quantum computing presents a catastrophic risk to current asymmetric encryption methods like RSA and ECC. Shor's algorithm, once running on a large-scale quantum computer (CRQC), could factor large integers and solve discrete logarithms in polynomial time.</p>
+<ul class="list-disc ml-4 space-y-2 text-on-surface-variant">
+<li><strong class="text-on-surface">Immediate Action:</strong> Implement "Quantum-Resistant" (PQC) algorithms such as Crystals-Kyber for key encapsulation.</li>
+<li><strong class="text-on-surface">Financial Migration:</strong> Institutions should target 2026-2028 for full crypto-agility layers.</li>
+</ul>
+</div>
+<div class="mt-6 flex items-center gap-4 border-t border-outline-variant/10 pt-4">
+<button class="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="thumb_up">thumb_up</span>
+<span>Helpful</span>
+</button>
+<button class="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-tertiary transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="content_copy">content_copy</span>
+<span>Copy</span>
+</button>
+</div>
+</div>
+<!-- Claude 3.5 Response Card -->
+<div class="bg-surface-container p-6 rounded-2xl border border-tertiary/20 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-tertiary"></div>
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary" data-icon="psychology">psychology</span>
+<span class="font-headline font-bold text-sm tracking-tight text-on-surface">Claude 3.5 Sonnet</span>
+<div class="h-1 w-1 rounded-full bg-outline-variant"></div>
+<span class="text-[10px] text-on-surface-variant font-label uppercase">Synthesis Finished</span>
+</div>
+<div class="flex items-center gap-4 text-[10px] font-mono text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="speed">speed</span> 1,850 ms</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="data_usage">data_usage</span> 915 tokens</span>
+</div>
+</div>
+<div class="space-y-4 font-body text-on-surface/90 leading-relaxed text-sm">
+<p>To analyze the impact through an editorial lens: we are entering the era of "Harvest Now, Decrypt Later" (HNDL) attacks. Financial institutions are the primary targets for this long-game strategy.</p>
+<div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/10">
+<h4 class="text-xs font-bold uppercase tracking-widest text-tertiary mb-2">Editorial Timeline</h4>
+<p class="text-xs text-on-surface-variant italic">"The transition is not a patch; it is a structural renovation. Start with high-value data archival protocols by end of Q4 2024."</p>
+</div>
+</div>
+<div class="mt-6 flex items-center gap-4 border-t border-outline-variant/10 pt-4">
+<button class="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="thumb_up">thumb_up</span>
+</button>
+<button class="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-tertiary transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Gemini 1.5 Response Card -->
+<div class="bg-surface-container p-6 rounded-2xl border border-secondary/20 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-secondary"></div>
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" data-icon="hub">hub</span>
+<span class="font-headline font-bold text-sm tracking-tight text-on-surface">Gemini 1.5 Pro</span>
+<div class="h-1 w-1 rounded-full bg-outline-variant"></div>
+<span class="text-[10px] text-on-surface-variant font-label uppercase">Multi-modal Scan</span>
+</div>
+<div class="flex items-center gap-4 text-[10px] font-mono text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="speed">speed</span> 3,120 ms</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="data_usage">data_usage</span> 612 tokens</span>
+</div>
+</div>
+<div class="space-y-4 font-body text-on-surface/90 leading-relaxed text-sm">
+<p>Key findings based on the NIST post-quantum cryptography standardization process:</p>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container-high p-3 rounded border border-outline-variant/10">
+<span class="text-[10px] text-secondary font-bold uppercase">Risk Factor</span>
+<p class="text-xs mt-1">Symmetric keys (AES-256) remain relatively safe but require doubled key sizes.</p>
+</div>
+<div class="bg-surface-container-high p-3 rounded border border-outline-variant/10">
+<span class="text-[10px] text-secondary font-bold uppercase">Market Impact</span>
+<p class="text-xs mt-1">SWIFT and FedWire protocols require multi-layer PQC wrapping by 2030.</p>
+</div>
+</div>
+</div>
+<div class="mt-6 flex items-center gap-4 border-t border-outline-variant/10 pt-4">
+<button class="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="thumb_up">thumb_up</span>
+</button>
+<button class="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-tertiary transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Message Bar -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-16rem)] p-8">
+<div class="max-w-4xl mx-auto">
+<div class="glass-panel border border-outline-variant/30 rounded-2xl p-2 shadow-2xl">
+<div class="flex items-center gap-2 px-4 py-2 mb-1">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-highest/50 border border-outline-variant/20 hover:border-secondary transition-all group">
+<span class="material-symbols-outlined text-sm text-on-surface-variant group-hover:text-secondary" data-icon="language">language</span>
+<span class="text-xs font-label text-on-surface-variant group-hover:text-on-surface">Search Web</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-highest/50 border border-outline-variant/20 hover:border-secondary transition-all group">
+<span class="material-symbols-outlined text-sm text-on-surface-variant group-hover:text-secondary" data-icon="attach_file">attach_file</span>
+<span class="text-xs font-label text-on-surface-variant group-hover:text-on-surface">Attach Docs</span>
+</button>
+<div class="h-4 w-[1px] bg-outline-variant/30 mx-2"></div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Shift + Enter for new line</span>
+</div>
+<div class="flex items-end gap-3 px-2">
+<textarea class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/50 font-body py-4 px-4 resize-none min-h-[56px]" placeholder="Prompt all active models..." rows="1"></textarea>
+<button class="mb-2 mr-2 w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-dim flex items-center justify-center text-on-primary shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+</button>
+</div>
+</div>
+<div class="mt-4 flex justify-center gap-8">
+<div class="flex items-center gap-2 text-[10px] text-on-surface-variant/50 font-label tracking-widest uppercase">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(0,227,253,0.5)]"></span>
+                        Neural Gateway: Active
+                    </div>
+<div class="flex items-center gap-2 text-[10px] text-on-surface-variant/50 font-label tracking-widest uppercase">
+<span class="material-symbols-outlined text-sm" data-icon="security">security</span>
+                        Encrypted Session
+                    </div>
+</div>
+</div>
+</footer>
+</main>
+</body></html>

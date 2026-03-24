@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Neural Engines | Lumina AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-fixed": "#ff8cbc",
+                        "secondary-fixed": "#26e6ff",
+                        "on-background": "#dde5ff",
+                        "tertiary-dim": "#ec77aa",
+                        "secondary-fixed-dim": "#00d7f0",
+                        "secondary-dim": "#00d4ec",
+                        "tertiary-fixed-dim": "#f37daf",
+                        "on-secondary": "#004d57",
+                        "on-primary": "#2f0095",
+                        "on-surface-variant": "#a3abc3",
+                        "on-primary-fixed-variant": "#2c008f",
+                        "on-secondary-container": "#e8fbff",
+                        "on-primary-fixed": "#000000",
+                        "primary-dim": "#765bee",
+                        "on-tertiary-fixed-variant": "#6f1043",
+                        "on-error": "#490013",
+                        "surface-container-lowest": "#000000",
+                        "on-error-container": "#ffb2b9",
+                        "on-secondary-fixed-variant": "#005964",
+                        "surface-bright": "#1f2b48",
+                        "inverse-surface": "#faf8ff",
+                        "tertiary": "#ff9ac3",
+                        "on-tertiary-fixed": "#37001e",
+                        "outline-variant": "#40485c",
+                        "on-primary-container": "#230076",
+                        "primary": "#b1a1ff",
+                        "surface-container-highest": "#19253f",
+                        "surface-dim": "#060e20",
+                        "primary-container": "#a391ff",
+                        "error-container": "#a70138",
+                        "secondary-container": "#006875",
+                        "surface-tint": "#b1a1ff",
+                        "secondary": "#00e3fd",
+                        "primary-fixed-dim": "#9680ff",
+                        "tertiary-container": "#fc84b7",
+                        "on-surface": "#dde5ff",
+                        "error-dim": "#d73357",
+                        "inverse-primary": "#6043d7",
+                        "surface-container-high": "#141f37",
+                        "on-tertiary": "#6b0c40",
+                        "surface-container-low": "#091327",
+                        "surface-variant": "#19253f",
+                        "surface-container": "#0f192f",
+                        "on-tertiary-container": "#5c0035",
+                        "background": "#060e20",
+                        "error": "#ff6e84",
+                        "on-secondary-fixed": "#003a42",
+                        "inverse-on-surface": "#4d556a",
+                        "outline": "#6d758b",
+                        "primary-fixed": "#a391ff",
+                        "surface": "#060e20"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(25, 37, 63, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #19253f;
+            height: 4px;
+            border-radius: 2px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #00e3fd;
+            margin-top: -6px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 227, 253, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-secondary/30">
+<!-- SideNavBar (Authority: JSON) -->
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col bg-[#091328] py-6 z-50">
+<div class="px-6 mb-10">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-gradient-to-br from-primary to-primary-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-sm">settings_input_component</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight text-[#dee5ff] font-['Space_Grotesk']">Lumina AI</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-medium">Synthetic Curator</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center text-[#dee5ff]/60 hover:text-[#dee5ff] px-4 py-3 transition-colors mx-2 hover:bg-[#141f38] group" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="chat_bubble">chat_bubble</span>
+<span class="font-medium text-sm">Orchestrator</span>
+</a>
+<a class="flex items-center text-[#dee5ff]/60 hover:text-[#dee5ff] px-4 py-3 transition-colors mx-2 hover:bg-[#141f38] group" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="compare_arrows">compare_arrows</span>
+<span class="font-medium text-sm">Benchmarking</span>
+</a>
+<!-- Active State Logic applied to Neural Engines -->
+<a class="flex items-center text-[#5D3FD3] bg-[#141f38] rounded-lg mx-2 px-4 py-3 transition-all duration-200 scale-[0.98]" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings_input_component">settings_input_component</span>
+<span class="font-medium text-sm">Neural Engines</span>
+</a>
+</nav>
+<div class="mt-auto px-4 space-y-1">
+<button class="w-full bg-gradient-to-r from-primary to-primary-dim text-on-primary py-3 rounded-lg font-bold text-sm mb-6 flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-sm">add</span>
+                New Session
+            </button>
+<a class="flex items-center text-[#dee5ff]/60 hover:text-[#dee5ff] px-4 py-3 transition-colors text-sm" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="description">description</span>
+                Documentation
+            </a>
+<a class="flex items-center text-[#dee5ff]/60 hover:text-[#dee5ff] px-4 py-3 transition-colors text-sm" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="help">help</span>
+                Support
+            </a>
+</div>
+</aside>
+<!-- TopNavBar (Authority: JSON) -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-[#060e20]/80 backdrop-blur-xl flex justify-between items-center px-8 shadow-xl shadow-[#060e20]/40">
+<div class="flex items-center gap-8">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="bg-surface-container-highest border-none rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-1 focus:ring-secondary/40 transition-all outline-none" placeholder="Search parameters..." type="text"/>
+</div>
+<nav class="flex items-center gap-6">
+<a class="text-[#dee5ff]/70 hover:text-[#dee5ff] transition-colors font-medium text-sm" href="#">Models</a>
+<a class="text-[#dee5ff]/70 hover:text-[#dee5ff] transition-colors font-medium text-sm" href="#">Datasets</a>
+<a class="text-[#dee5ff]/70 hover:text-[#dee5ff] transition-colors font-medium text-sm" href="#">Logs</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-[#dee5ff]/70 hover:text-[#5D3FD3] transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-[#dee5ff]/70 hover:text-[#5D3FD3] transition-all">
+<span class="material-symbols-outlined" data-icon="dns">dns</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Close-up portrait of a professional male tech lead with short hair and glasses, neutral expression, studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXw2mcnF3yLkpfOV7136jTGzMesbP-QdcbU2b_bIdujg6sMANxqANIlSSxNrin9yjCJ8v3gSApirArgWyvVsgTRwsR1TpFUBGX8S8U4-XhK1OjvBrBqEsB7i4y4RrML9YkJaGHu4UtJTwZ7f7bao7m7AbJ5lJuQiXLWpbfdFQdsqOz5bbymCreTNIeKCKF86nXSm_jQrh4owqPFmIbM_gwoyYMlorrPzExeuMOn3Tfh-uZz3l9EElALFQcrUW-aMb3tM8QEyjmX-I"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-64 pt-24 pb-12 px-12 min-h-screen">
+<!-- Editorial Header -->
+<section class="mb-12">
+<p class="font-label text-xs uppercase tracking-[0.2em] text-secondary mb-2 font-semibold">Core Configuration</p>
+<h2 class="font-headline text-5xl font-bold tracking-tight text-on-surface mb-4">Neural Engines</h2>
+<p class="text-on-surface-variant max-w-2xl text-lg leading-relaxed">
+                Fine-tune the weights, context windows, and operational parameters for your synthetic workforce. Each engine represents a specialized cognitive layer.
+            </p>
+</section>
+<!-- Model Grid (Bento Style) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+<!-- Curator-X1 Card -->
+<div class="bg-surface-container p-8 rounded-xl flex flex-col gap-8 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+<div class="flex justify-between items-start z-10">
+<div>
+<h3 class="font-headline text-2xl font-bold">Curator-X1</h3>
+<p class="text-xs text-on-surface-variant font-medium tracking-wide">PRIMARY REASONING ENGINE</p>
+</div>
+<!-- Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="space-y-6 z-10">
+<!-- API Key -->
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-outline mb-2">API Configuration</label>
+<div class="flex gap-2">
+<input class="bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2 text-sm w-full text-on-surface-variant focus:border-secondary/40 outline-none transition-all" readonly="" type="password" value="sk-curator-99283-x1-alpha"/>
+<button class="bg-surface-container-highest px-3 py-2 rounded-lg text-xs font-bold text-on-surface hover:bg-surface-bright transition-colors">REVEAL</button>
+</div>
+</div>
+<!-- Temperature Slider -->
+<div>
+<div class="flex justify-between items-center mb-2">
+<label class="text-[10px] font-bold uppercase tracking-widest text-outline">Temperature</label>
+<span class="text-xs font-mono text-secondary">0.72</span>
+</div>
+<input class="w-full" type="range"/>
+</div>
+<!-- Context Window -->
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-outline mb-2">Context Window</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2 text-sm text-on-surface-variant focus:border-secondary/40 outline-none appearance-none">
+<option>128k Tokens (Standard)</option>
+<option>200k Tokens (Deep Scan)</option>
+<option>1M Tokens (Vast)</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Muse-Ultra Card -->
+<div class="bg-surface-container p-8 rounded-xl flex flex-col gap-8 relative overflow-hidden group border border-primary/20">
+<div class="absolute -bottom-10 -left-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl"></div>
+<div class="flex justify-between items-start z-10">
+<div>
+<h3 class="font-headline text-2xl font-bold">Muse-Ultra</h3>
+<p class="text-xs text-on-surface-variant font-medium tracking-wide">CREATIVE SYNTHESIS</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="space-y-6 z-10">
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-outline mb-2">API Configuration</label>
+<div class="flex gap-2">
+<input class="bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2 text-sm w-full text-on-surface-variant focus:border-secondary/40 outline-none transition-all" readonly="" type="password" value="sk-muse-00122-u-ultra"/>
+<button class="bg-surface-container-highest px-3 py-2 rounded-lg text-xs font-bold text-on-surface hover:bg-surface-bright transition-colors">REVEAL</button>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<label class="text-[10px] font-bold uppercase tracking-widest text-outline">Temperature</label>
+<span class="text-xs font-mono text-secondary">1.05</span>
+</div>
+<input class="w-full" type="range" value="75"/>
+</div>
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-outline mb-2">Context Window</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2 text-sm text-on-surface-variant focus:border-secondary/40 outline-none appearance-none">
+<option>32k Tokens (Balanced)</option>
+<option>64k Tokens (Expansive)</option>
+<option>8k Tokens (Rapid)</option>
+</select>
+</div>
+</div>
+<div class="mt-auto z-10">
+<div class="p-4 rounded-lg bg-secondary/5 border border-secondary/10 flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-secondary animate-pulse shadow-[0_0_10px_rgba(0,227,253,0.5)]"></div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-secondary">ACTIVE: RUNNING INFERENCES</span>
+</div>
+</div>
+</div>
+<!-- Flash-Core Card -->
+<div class="bg-surface-container p-8 rounded-xl flex flex-col gap-8 relative overflow-hidden group">
+<div class="flex justify-between items-start z-10">
+<div>
+<h3 class="font-headline text-2xl font-bold">Flash-Core</h3>
+<p class="text-xs text-on-surface-variant font-medium tracking-wide">LATENCY-OPTIMIZED</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="space-y-6 z-10 opacity-50 group-hover:opacity-100 transition-opacity">
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-outline mb-2">API Configuration</label>
+<div class="flex gap-2">
+<input class="bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2 text-sm w-full text-on-surface-variant focus:border-secondary/40 outline-none transition-all" readonly="" type="password" value="sk-flash-core-992-delta"/>
+<button class="bg-surface-container-highest px-3 py-2 rounded-lg text-xs font-bold text-on-surface hover:bg-surface-bright transition-colors">REVEAL</button>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<label class="text-[10px] font-bold uppercase tracking-widest text-outline">Temperature</label>
+<span class="text-xs font-mono text-secondary">0.20</span>
+</div>
+<input class="w-full" type="range" value="20"/>
+</div>
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-outline mb-2">Context Window</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2 text-sm text-on-surface-variant focus:border-secondary/40 outline-none appearance-none">
+<option>4k Tokens (Lite)</option>
+<option>16k Tokens (Fast)</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<!-- Global Security Settings (Intentional Asymmetry) -->
+<section class="mt-20">
+<div class="flex items-center gap-4 mb-8">
+<div class="h-px flex-1 bg-outline-variant/20"></div>
+<h3 class="font-headline text-xl font-bold tracking-tight text-on-surface-variant">Global Security Protocol</h3>
+<div class="h-px flex-1 bg-outline-variant/20"></div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+<!-- Fallback Config -->
+<div class="lg:col-span-2 glass-panel p-8 rounded-xl border border-outline-variant/10">
+<div class="flex items-center gap-4 mb-6">
+<span class="material-symbols-outlined text-secondary">shuffle</span>
+<h4 class="font-headline text-lg font-bold">Dynamic Fallback Pipeline</h4>
+</div>
+<p class="text-sm text-on-surface-variant mb-6 leading-relaxed">Automatically reroute requests when the primary engine latency exceeds 2500ms or encounters rate limits.</p>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-4 bg-surface-container-highest/30 rounded-lg">
+<span class="text-sm font-medium">Primary: Curator-X1</span>
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+<span class="text-sm font-medium text-secondary">Backup: Muse-Ultra</span>
+</div>
+<button class="w-full py-2 text-xs font-bold uppercase tracking-widest border border-outline-variant/30 rounded-lg hover:bg-surface-container-highest transition-colors">Configure Routing Chain</button>
+</div>
+</div>
+<!-- Token Limits -->
+<div class="bg-surface-container-low p-8 rounded-xl border border-outline-variant/5">
+<div class="flex items-center gap-4 mb-6">
+<span class="material-symbols-outlined text-primary">toll</span>
+<h4 class="font-headline text-lg font-bold">Hard Limits</h4>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-outline mb-1">Monthly Token Cap</label>
+<div class="text-2xl font-mono text-on-surface">50.0M <span class="text-xs text-on-surface-variant">/ 75.0M</span></div>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full w-[66%]"></div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-xs text-error">warning</span>
+<span class="text-[10px] text-error font-bold uppercase tracking-widest">Auto-pause at 95% usage</span>
+</div>
+</div>
+</div>
+<!-- Logging -->
+<div class="bg-surface-container-low p-8 rounded-xl border border-outline-variant/5">
+<div class="flex items-center gap-4 mb-6">
+<span class="material-symbols-outlined text-on-surface-variant">terminal</span>
+<h4 class="font-headline text-lg font-bold">Request Logs</h4>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-surface-variant">Detailed Debugging</span>
+<div class="w-8 h-4 bg-secondary/20 rounded-full relative">
+<div class="absolute right-0.5 top-0.5 w-3 h-3 bg-secondary rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-surface-variant">PII Scrubbing</span>
+<div class="w-8 h-4 bg-surface-container-highest rounded-full relative">
+<div class="absolute left-0.5 top-0.5 w-3 h-3 bg-outline rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-surface-variant">Log Retention</span>
+<span class="text-xs font-mono font-bold">30D</span>
+</div>
+<button class="w-full mt-4 py-2 text-xs font-bold uppercase tracking-widest bg-surface-container-highest rounded-lg hover:bg-surface-bright transition-colors">Export Logs</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer Decoration -->
+<div class="mt-24 flex justify-between items-end opacity-20">
+<div>
+<p class="font-headline text-4xl font-black text-on-surface-variant">00101011</p>
+<p class="text-[10px] uppercase tracking-[0.4em] font-medium">System Kernel Integrity: Nominal</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] uppercase tracking-[0.2em] font-medium mb-1">Architecture V4.2.0</p>
+<div class="flex gap-1 justify-end">
+<div class="w-1 h-1 bg-on-surface-variant"></div>
+<div class="w-1 h-1 bg-on-surface-variant"></div>
+<div class="w-1 h-1 bg-secondary"></div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
