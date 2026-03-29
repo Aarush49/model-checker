@@ -1,15 +1,39 @@
 use crate::Message;
 use ai_core::ai::{Models, ProviderStatus};
 use dioxus::prelude::*;
-
+use std::collections::HashSet;
 #[component]
 pub fn OrchestratorPage() -> Element {
     let mut messages = use_signal(Vec::<Message>::new);
     let mut prompt = use_signal(String::new);
     let models_registry = use_context::<Signal<Models>>();
+    let mut selected_models = use_signal(|| HashSet::<String>::new());
+
+    use_effect(move || {
+        let registry = models_registry.read();
+        if selected_models.read().is_empty() {
+            let mut initial = HashSet::new();
+            for m in registry.models.iter() {
+                if m.status() == ProviderStatus::Ready {
+                    initial.insert(m.id().to_string());
+                }
+            }
+            if !initial.is_empty() {
+                selected_models.set(initial);
+            }
+        }
+    });
+
+    let models_data = {
+        let registry = models_registry.read();
+        registry.models.iter().map(|m| {
+            (m.id().to_string(), m.name().to_string(), m.status())
+        }).collect::<Vec<_>>()
+    };
 
     let mut send_message = move || {
         let current_prompt = prompt().clone();
+        let selected = selected_models.read().clone();
 
         if !current_prompt.is_empty() {
             messages.write().push(Message::User {
@@ -21,7 +45,7 @@ pub fn OrchestratorPage() -> Element {
             spawn(async move {
                 let responses = models_registry
                     .read()
-                    .ask(current_prompt)
+                    .ask(current_prompt, selected)
                     .await
                     .unwrap_or_default();
 
@@ -55,13 +79,27 @@ pub fn OrchestratorPage() -> Element {
                     }
                 }
                 div { class: "flex gap-4 overflow-x-auto pb-2 scrollbar-hide",
-                    for (index, model) in models_registry.read().models.iter().enumerate() {
+                    for (index, (model_id, model_name, model_status)) in models_data.into_iter().enumerate() {
                         div {
                             key: "{index}",
-                            class: format!("flex-shrink-0 w-64 p-4 rounded-xl bg-surface-container border-2 flex flex-col gap-3 relative overflow-hidden group {}", if model.status() == ProviderStatus::Ready { "border-primary/40" } else { "border-outline-variant/20 opacity-60" }),
-                            if model.status() == ProviderStatus::Ready {
-                                div { class: "absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-100 transition-opacity",
-                                    span { class: "material-symbols-outlined text-primary text-xs", style: "font-variation-settings: 'FILL' 1;", "check_circle" }
+                            class: format!("select-none cursor-pointer flex-shrink-0 w-64 p-4 rounded-xl bg-surface-container border-2 flex flex-col gap-3 relative overflow-hidden group transition-all duration-300 {}", if selected_models.read().contains(&model_id) { "border-primary/80 bg-primary/5 shadow-[0_0_15px_rgba(0,227,253,0.1)]" } else if model_status == ProviderStatus::Ready { "border-primary/20 opacity-70 hover:opacity-100 hover:border-primary/40" } else { "border-outline-variant/20 opacity-50" }),
+                            onclick: move |_| {
+                                if model_status == ProviderStatus::Ready {
+                                    let mut selected = selected_models.write();
+                                    if selected.contains(&model_id) {
+                                        selected.remove(&model_id);
+                                    } else {
+                                        selected.insert(model_id.clone());
+                                    }
+                                }
+                            },
+                            if selected_models.read().contains(&model_id) {
+                                div { class: "absolute top-0 right-0 p-2 transition-opacity",
+                                    span { class: "material-symbols-outlined text-primary text-sm", style: "font-variation-settings: 'FILL' 1;", "check_circle" }
+                                }
+                            } else if model_status == ProviderStatus::Ready {
+                                div { class: "absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity",
+                                    span { class: "material-symbols-outlined text-primary text-sm opacity-50 hover:opacity-100", "add_circle" }
                                 }
                             }
                             div { class: "flex items-center gap-3",
@@ -69,12 +107,12 @@ pub fn OrchestratorPage() -> Element {
                                     span { class: "material-symbols-outlined text-primary", "bolt" }
                                 }
                                 div {
-                                    h3 { class: "font-bold text-sm font-headline truncate", "{model.name()}" }
+                                    h3 { class: "font-bold text-sm font-headline truncate", "{model_name}" }
                                     p { class: "text-[10px] text-on-surface-variant truncate", "AI Provider" }
                                 }
                             }
                             div { class: "flex items-center justify-between mt-2",
-                                match model.status() {
+                                match model_status {
                                     ProviderStatus::Ready => rsx!{ span { class: "text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded uppercase font-bold tracking-tighter", "Ready" } },
                                     ProviderStatus::RequiresAuth => rsx!{ span { class: "text-[10px] bg-error/10 text-error px-2 py-0.5 rounded uppercase font-bold tracking-tighter", "Needs Auth" } },
                                     ProviderStatus::RequiresInstallation => rsx!{ span { class: "text-[10px] bg-tertiary/10 text-tertiary px-2 py-0.5 rounded uppercase font-bold tracking-tighter", "Install" } },

@@ -1,331 +1,151 @@
 ﻿cargo :    Compiling 
-ai-core v0.1.0 (C:\Use
-rs\aarus\Desktop\model
--checker\ai-core)
+ai-core v0.1.0 (C:\Users\a
+arus\Desktop\model-checker
+\ai-core)
 At line:1 char:1
-+ cargo check --color 
-never 2>&1 | Out-File 
--Encoding utf8 
++ cargo check 2>&1 | 
+Out-File -Encoding utf8 
 build.txt
-+ ~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~
-    + CategoryInfo    
-          : 
-NotSpecifi    ed: (   
-Compiling     
-ai...hecker\ai-cor    
-e):String) [], Rem    
-oteException
-    + 
-FullyQualifiedEr    
-rorId : NativeComm    
-andError
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (   
+    Compiling ai...heck   
+ er\ai-core):String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
  
-warning: unused 
-import: 
-`gemini::Gemini`
- --> 
-ai-core\src\ai.rs:4:24
-  |
-4 | use crate::provide
-rs::{gemini::Gemini, 
-phi::Phi};
-  |                   
-     ^^^^^^^^^^^^^^
-  |
-  = note: `#[warn(unus
-ed_imports)]` (part 
-of `#[warn(unused)]`) 
-on by default
-
-warning: unused 
-import: `DirectML`
-  --> ai-core\src\loca
-l.rs:12:15
+warning: unused import: 
+`DirectML`
+  --> 
+ai-core\src\local.rs:12:15
    |
 12 |     ep::{CPU, 
 DirectML, QNN},
    |               
 ^^^^^^^^
+   |
+   = note: 
+`#[warn(unused_imports)]` 
+(part of 
+`#[warn(unused)]`) on by 
+default
 
-warning: `ai-core` 
-(lib) generated 2 
-warnings (run `cargo 
-fix --lib -p ai-core` 
-to apply 2 
-suggestions)
+warning: `ai-core` (lib) 
+generated 1 warning (run 
+`cargo fix --lib -p 
+ai-core` to apply 1 
+suggestion)
     Checking 
-model-checker v0.1.0 (
-C:\Users\aarus\Desktop
-\model-checker)
-error: Failed to 
-parse formatted 
-segment: Expected 
-Ident or Expression
-  --> src\neural_engin
-es.rs:27:32
-   |
-27 | ...s: 
-"bg-surface-container 
-p-8 rounded-xl flex 
-flex-col gap-8 
-relative 
-overflow-hidden group 
-{if model.status() == 
-ProviderStatus::Ready 
-{ \"border 
-border-primary/20\" } 
-else { \"\" }}",
-   |       ^^^^^^^^^^^
+model-checker v0.1.0 (C:\U
+sers\aarus\Desktop\model-c
+hecker)
+error[E0597]: 
+`models_registry` does 
+not live long enough
+   --> 
+src\orchestrator.rs:75:43
+    |
+  9 |     let 
+models_registry = use_cont
+ext::<Signal<Models>>();
+    |         
+--------------- binding 
+`models_registry` 
+declared here
+...
+ 75 |                     
+for (index, model) in mode
+ls_registry.read().models.
+iter().enumerate() {
+    |                     
+                      
+^^^^^^^^^^^^^^^ borrowed 
+value does not live long 
+enough
+...
+ 79 |                     
+        onclick: move |_| 
+{
+    |                     
+                 ---- 
+argument requires that 
+`models_registry` is 
+borrowed for `'static`
+...
+229 | }
+    | - `models_registry` 
+dropped here while still 
+borrowed
+    |
+note: requirement that 
+the value outlives 
+`'static` introduced here
+   --> C:\Users\aarus\.rus
+tup\toolchains\stable-x86_
+64-pc-windows-msvc\lib/rus
+tlib/src/rust\library\core
+\src\iter\traits\iterator.
+rs:780:12
+    |
+780 |         F: 
+FnMut(Self::Item) -> B,
+    |            
 ^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^
 
-error: Failed to 
-parse formatted 
-segment: Expected 
-Ident or Expression
-  --> src\orchestrator
-.rs:61:36
-   |
-61 | ...s: 
-"flex-shrink-0 w-64 
-p-4 rounded-xl 
-bg-surface-container 
-border-2 flex 
-flex-col gap-3 
-relative 
-overflow-hidden group 
-{if model.status() == 
-ProviderStatus::Ready 
-{ 
-\"border-primary/40\" 
-} else { \"border-outl
-ine-variant/20 
-opacity-60\" }}",
-   |       ^^^^^^^^^^^
+error[E0716]: temporary 
+value dropped while 
+borrowed
+   --> 
+src\orchestrator.rs:75:43
+    |
+ 75 |                     
+for (index, model) in mode
+ls_registry.read().models.
+iter().enumerate() {
+    |                     
+                      
+^^^^^^^^^^^^^^^^^^^^^^ 
+creates a temporary value 
+which is freed while 
+still in use
+...
+ 79 |                     
+        onclick: move |_| 
+{
+    |                     
+                 ---- 
+argument requires that 
+borrow lasts for `'static`
+...
+228 |     }
+    |     - temporary 
+value is freed at the end 
+of this statement
+    |
+note: requirement that 
+the value outlives 
+`'static` introduced here
+   --> C:\Users\aarus\.rus
+tup\toolchains\stable-x86_
+64-pc-windows-msvc\lib/rus
+tlib/src/rust\library\core
+\src\iter\traits\iterator.
+rs:780:12
+    |
+780 |         F: 
+FnMut(Self::Item) -> B,
+    |            
 ^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^
 
-warning: unused 
-import: 
-`ProviderStatus`
- --> src\neural_engine
-s.rs:1:27
-  |
-1 | use 
-ai_core::ai::{Models, 
-ProviderStatus};
-  |                   
-        ^^^^^^^^^^^^^^
-  |
-  = note: `#[warn(unus
-ed_imports)]` (part 
-of `#[warn(unused)]`) 
-on by default
-
-warning: unused 
-import: 
-`ProviderStatus`
- --> src\orchestrator.
-rs:2:27
-  |
-2 | use 
-ai_core::ai::{Models, 
-ProviderStatus};
-  |                   
-        ^^^^^^^^^^^^^^
-
-error[E0599]: no 
-method named 
-`inactive_class` 
-found for struct `diox
-us::dioxus_router::com
-ponents::LinkPropsBuil
-der<TypedBuilderFields
->` in the current 
-scope
-  --> 
-src\layout.rs:53:25
-   |
- 6 | /     rsx! {
- 7 | |         div {
- 8 | |             
-class: "bg-background 
-text-on-surface 
-font-body selection:bg
--secondary/30 
-h-screen 
-overflow-hidden",
-...  |
-52 | |                
-         
-active_class: 
-"text-[#5D3FD3] 
-bg-[#141f38] 
-font-bold",
-53 | |                
-         
-inactive_class: 
-"text-[#dee5ff]/60 
-hover:text-[#dee5ff] 
-hover:bg-[#141f38]",
-   | |________________
-________-^^^^^^^^^^^^^
-^
-   |
-help: there is a 
-method `active_class` 
-with a similar name
-   |
-53 -                  
-       
-inactive_class: 
-"text-[#dee5ff]/60 
-hover:text-[#dee5ff] 
-hover:bg-[#141f38]",
-53 +                  
-       active_class: 
-"text-[#dee5ff]/60 
-hover:text-[#dee5ff] 
-hover:bg-[#141f38]",
-   |
-
-error[E0599]: no 
-method named 
-`inactive_class` 
-found for struct `diox
-us::dioxus_router::com
-ponents::LinkPropsBuil
-der<TypedBuilderFields
->` in the current 
-scope
-  --> 
-src\layout.rs:67:25
-   |
- 6 | /     rsx! {
- 7 | |         div {
- 8 | |             
-class: "bg-background 
-text-on-surface 
-font-body selection:bg
--secondary/30 
-h-screen 
-overflow-hidden",
-...  |
-66 | |                
-         
-active_class: 
-"text-[#5D3FD3] 
-bg-[#141f38] 
-font-bold",
-67 | |                
-         
-inactive_class: 
-"text-[#dee5ff]/60 
-hover:text-[#dee5ff] 
-hover:bg-[#141f38]",
-   | |________________
-________-^^^^^^^^^^^^^
-^
-   |
-help: there is a 
-method `active_class` 
-with a similar name
-   |
-67 -                  
-       
-inactive_class: 
-"text-[#dee5ff]/60 
-hover:text-[#dee5ff] 
-hover:bg-[#141f38]",
-67 +                  
-       active_class: 
-"text-[#dee5ff]/60 
-hover:text-[#dee5ff] 
-hover:bg-[#141f38]",
-   |
-
-error[E0599]: no 
-method named 
-`inactive_class` 
-found for struct `diox
-us::dioxus_router::com
-ponents::LinkPropsBuil
-der<TypedBuilderFields
->` in the current 
-scope
-  --> 
-src\layout.rs:81:25
-   |
- 6 | /     rsx! {
- 7 | |         div {
- 8 | |             
-class: "bg-background 
-text-on-surface 
-font-body selection:bg
--secondary/30 
-h-screen 
-overflow-hidden",
-...  |
-80 | |                
-         
-active_class: 
-"text-[#5D3FD3] 
-bg-[#141f38] 
-font-bold",
-81 | |                
-         
-inactive_class: 
-"text-[#dee5ff]/60 
-hover:text-[#dee5ff] 
-hover:bg-[#141f38]",
-   | |________________
-________-^^^^^^^^^^^^^
-^
-   |
-help: there is a 
-method `active_class` 
-with a similar name
-   |
-81 -                  
-       
-inactive_class: 
-"text-[#dee5ff]/60 
-hover:text-[#dee5ff] 
-hover:bg-[#141f38]",
-81 +                  
-       active_class: 
-"text-[#dee5ff]/60 
-hover:text-[#dee5ff] 
-hover:bg-[#141f38]",
-   |
-
+Some errors have detailed 
+explanations: E0597, 
+E0716.
 For more information 
-about this error, try 
-`rustc --explain 
-E0599`.
-warning: 
+about an error, try 
+`rustc --explain E0597`.
+error: could not compile 
 `model-checker` (bin 
-"model-checker") 
-generated 2 warnings
-error: could not 
-compile 
-`model-checker` (bin 
-"model-checker") due 
-to 5 previous errors; 
-2 warnings emitted
+"model-checker") due to 2 
+previous errors

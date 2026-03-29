@@ -1,7 +1,9 @@
 use anyhow::{Ok, Result, anyhow};
 use async_trait::async_trait;
 
-use crate::providers::{gemini::Gemini, phi::Phi};
+use std::collections::HashSet;
+
+use crate::providers::{chatgpt::ChatGPT, gemini::Gemini, phi::Phi};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ComputeMode {
@@ -62,12 +64,16 @@ impl Models {
             .user_agent("ModelChecker/1.0 (Rust reqwest)")
             .build()?;
 
-        Ok(Self {
-            models: vec![
-                // Box::new(Gemini::new(&http_client).await?),
-                Box::new(Phi::new(&http_client).await),
-            ],
-        })
+        let mut models: Vec<Box<dyn ModelProvider>> = vec![
+            Box::new(Phi::new(&http_client).await),
+            Box::new(ChatGPT::new(&http_client).await),
+        ];
+
+        if let std::result::Result::Ok(gemini) = Gemini::new(&http_client).await {
+            models.push(Box::new(gemini));
+        }
+
+        Ok(Self { models })
     }
 
     pub async fn setup(&self, index: usize) -> Result<()> {
@@ -80,12 +86,12 @@ impl Models {
         Ok(())
     }
 
-    pub async fn ask(&self, prompt: String) -> Result<Vec<(String, String)>> {
+    pub async fn ask(&self, prompt: String, selected_model_ids: HashSet<String>) -> Result<Vec<(String, String)>> {
         let mut responses = vec![];
         for model in self
             .models
             .iter()
-            .filter(|model| model.status() == ProviderStatus::Ready)
+            .filter(|model| model.status() == ProviderStatus::Ready && selected_model_ids.contains(model.id()))
         {
             responses.push((model.id().to_string(), model.ask(&prompt).await?));
         }
