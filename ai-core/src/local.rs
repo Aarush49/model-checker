@@ -9,7 +9,7 @@ use futures_util::{StreamExt, future::join_all};
 use half::f16;
 use ndarray::{Array2, ArrayD};
 use ort::{
-    ep::{CPU, DirectML, QNN},
+    ep::{CPU},
     session::{Session, builder::GraphOptimizationLevel},
     value::Tensor,
 };
@@ -109,9 +109,7 @@ impl LocalModel {
             .map_err(|e| anyhow::anyhow!("Failed to parse tokenizer.json: {}", e))?;
 
         let execution_providers = vec![
-            #[cfg(target_os = "windows")]
-            DirectML::default().build(),
-            // CPU::default().build(),
+            CPU::default().build(),
         ];
 
         let session = Session::builder()?
