@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 #[component]
 pub fn BenchmarkingPage() -> Element {
     rsx! {
-        main { class: "ml-64 pt-24 pb-12 px-12 min-h-screen bg-transparent overflow-y-auto",
+        main { class: "ml-64 pt-24 pb-12 px-12 h-screen bg-transparent overflow-y-auto",
             // Hero Editorial Header
             section { class: "mb-12 flex justify-between items-end",
                 div { class: "max-w-2xl",

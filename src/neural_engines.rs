@@ -3,10 +3,10 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn NeuralEnginesPage() -> Element {
-    let models_registry = use_context::<Signal<Models>>();
+    let mut models_registry = use_context::<Signal<Models>>();
 
     rsx! {
-        main { class: "ml-64 pt-24 pb-12 px-12 min-h-screen bg-background overflow-y-auto",
+        main { class: "ml-64 pt-24 pb-12 px-12 h-screen bg-background overflow-y-auto",
             // Editorial Header
             section { class: "mb-12",
                 p { class: "font-label text-xs uppercase tracking-[0.2em] text-secondary mb-2 font-semibold",
@@ -31,7 +31,7 @@ pub fn NeuralEnginesPage() -> Element {
                                 h3 { class: "font-headline text-2xl font-bold truncate", "{model.name()}" }
                                 p { class: "text-xs text-on-surface-variant font-medium tracking-wide uppercase", "AI PROVIDER CONFIG" }
                             }
-                            label { class: "relative inline-flex items-center cursor-pointer",
+                                label { class: "group relative inline-flex items-center cursor-pointer",
                                 input {
                                     "type": "checkbox",
                                     class: "sr-only peer",
@@ -39,10 +39,12 @@ pub fn NeuralEnginesPage() -> Element {
                                     onchange: move |_| {
                                         spawn(async move {
                                             models_registry.read().setup(index).await.unwrap();
+                                            // Trigger re-render to reflect new status
+                                            models_registry.write();
                                         });
                                     }
                                 }
-                                div { class: "w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary" }
+                                div { class: "w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary group-hover:ring-4 group-hover:ring-primary/10 transition-all" }
                             }
                         }
                         div { class: format!("space-y-6 z-10 {}", if model.status() != ProviderStatus::Ready { "opacity-50" } else { "" }),
