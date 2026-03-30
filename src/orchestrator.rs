@@ -82,24 +82,22 @@ pub fn OrchestratorPage() -> Element {
                     for (index, (model_id, model_name, model_status)) in models_data.into_iter().enumerate() {
                         div {
                             key: "{index}",
-                            class: format!("select-none cursor-pointer flex-shrink-0 w-64 p-4 rounded-xl bg-surface-container border-2 flex flex-col gap-3 relative overflow-hidden group transition-all duration-300 {}", if selected_models.read().contains(&model_id) { "border-primary/80 bg-primary/5 shadow-[0_0_15px_rgba(0,227,253,0.1)]" } else if model_status == ProviderStatus::Ready { "border-primary/20 opacity-70 hover:opacity-100 hover:border-primary/40" } else { "border-outline-variant/20 opacity-50" }),
+                            class: format!("select-none cursor-pointer flex-shrink-0 w-64 p-4 rounded-xl bg-surface-container border-2 flex flex-col gap-3 relative overflow-hidden group transition-all duration-300 {}", if selected_models.read().contains(&model_id) { "border-primary/80 bg-primary/5 shadow-[0_0_15px_rgba(0,227,253,0.1)]" } else if model_status == ProviderStatus::Ready { "border-primary/20 opacity-70 hover:opacity-100 hover:border-primary/40" } else { "border-outline-variant/20 opacity-60 hover:opacity-90 hover:border-outline-variant/40" }),
                             onclick: move |_| {
-                                if model_status == ProviderStatus::Ready {
-                                    let mut selected = selected_models.write();
-                                    if selected.contains(&model_id) {
-                                        selected.remove(&model_id);
-                                    } else {
-                                        selected.insert(model_id.clone());
-                                    }
+                                let mut selected = selected_models.write();
+                                if selected.contains(&model_id) {
+                                    selected.remove(&model_id);
+                                } else {
+                                    selected.insert(model_id.clone());
                                 }
                             },
                             if selected_models.read().contains(&model_id) {
                                 div { class: "absolute top-0 right-0 p-2 transition-opacity",
                                     span { class: "material-symbols-outlined text-primary text-sm", style: "font-variation-settings: 'FILL' 1;", "check_circle" }
                                 }
-                            } else if model_status == ProviderStatus::Ready {
+                            } else {
                                 div { class: "absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity",
-                                    span { class: "material-symbols-outlined text-primary text-sm opacity-50 hover:opacity-100", "add_circle" }
+                                    span { class: "material-symbols-outlined text-outline text-sm opacity-50 hover:opacity-100", "add_circle" }
                                 }
                             }
                             div { class: "flex items-center gap-3",
