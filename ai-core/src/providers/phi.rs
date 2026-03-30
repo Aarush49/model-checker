@@ -57,22 +57,22 @@ impl ModelProvider for Phi {
     async fn setup(&self) -> Result<()> {
         let download_urls = vec![
             // 1. The Core Graph (The "Brain" structure)
-            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/gpu/gpu-int4-rtn-block-32/model.onnx".to_string(),
+            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/model.onnx".to_string(),
 
             // 2. The Heavyweight Weights (The ~2.5GB file - this will take a few minutes!)
-            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/gpu/gpu-int4-rtn-block-32/model.onnx.data".to_string(),
+            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/model.onnx.data".to_string(),
 
             // 3. The Generation Config (Tells ORT the default Temperature, Top-P, etc.)
-            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/gpu/gpu-int4-rtn-block-32/genai_config.json".to_string(),
+            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/genai_config.json".to_string(),
 
             // 4. Standard Model Config
-            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/gpu/gpu-int4-rtn-block-32/config.json".to_string(),
+            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/config.json".to_string(),
 
             // 5. The Tokenizer Files (Converts your text into NPU integers)
-            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/gpu/gpu-int4-rtn-block-32/tokenizer.json".to_string(),
-            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/gpu/gpu-int4-rtn-block-32/tokenizer_config.json".to_string(),
-            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/gpu/gpu-int4-rtn-block-32/special_tokens_map.json".to_string(),
-            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/gpu/gpu-int4-rtn-block-32/added_tokens.json".to_string(),
+            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/tokenizer.json".to_string(),
+            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/tokenizer_config.json".to_string(),
+            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/special_tokens_map.json".to_string(),
+            "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/added_tokens.json".to_string(),
         ];
 
         self.handler.setup(&self.http_client, download_urls).await?;
@@ -85,6 +85,6 @@ impl ModelProvider for Phi {
     async fn ask(&self, prompt: &String) -> Result<String> {
         self.handler.load()?;
 
-        self.handler.ask(format!("<|im_start|>system<|im_sep|>You are a helpful AI assistant.<|im_end|>\n<|im_start|>user<|im_sep|>{prompt}<|im_end|>\n<|im_start|>assistant<|im_sep|>"), 1024).await
+        self.handler.ask(format!("<|system|>\nYou are a helpful AI assistant.<|end|>\n<|user|>\n{prompt}<|end|>\n<|assistant|>\n"), 1024).await
     }
 }

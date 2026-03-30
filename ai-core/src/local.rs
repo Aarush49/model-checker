@@ -4,7 +4,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use anyhow::{Context, Ok, Result};
+use anyhow::{Context, Ok, Result, anyhow};
 use futures_util::{StreamExt, future::join_all};
 use half::f16;
 use ndarray::{Array2, ArrayD};
@@ -109,15 +109,18 @@ impl LocalModel {
             .map_err(|e| anyhow::anyhow!("Failed to parse tokenizer.json: {}", e))?;
 
         let execution_providers = vec![
-            QNN::default().build(),
-            // #[cfg(target_os = "windows")]
-            // DirectML::default().build(),
-            CPU::default().build(),
+            #[cfg(target_os = "windows")]
+            DirectML::default().build(),
+            // CPU::default().build(),
         ];
 
         let session = Session::builder()?
-            .with_optimization_level(GraphOptimizationLevel::Level3)
+            .with_optimization_level(GraphOptimizationLevel::Disable)
             .map_err(|e| anyhow::anyhow!("Failed to set optimization level: {}", e))?
+            .with_memory_pattern(true)
+            .map_err(|e| anyhow!("Failed to set memory pattern: {e}"))?
+            .with_parallel_execution(true)
+            .map_err(|e| anyhow!("Failed to set parallel execution: {e}"))?
             .with_execution_providers(execution_providers)
             .map_err(|e| anyhow::anyhow!("Failed to set execution providers: {}", e))?
             .commit_from_file(&model_path)?;

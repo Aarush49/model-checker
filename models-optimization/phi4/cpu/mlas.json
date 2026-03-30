@@ -1,0 +1,65 @@
+{
+    "input_model": {
+        "type": "HfModel",
+        "model_path": "microsoft/Phi-4-mini-instruct"
+    },
+    "systems": {
+        "target_system": {
+            "type": "LocalSystem",
+            "accelerators": [
+                {
+                    "execution_providers": [
+                        "CPUExecutionProvider"
+                    ]
+                }
+            ]
+        },
+        "host_system": {
+            "type": "LocalSystem",
+            "accelerators": [
+                {
+                    "execution_providers": [
+                        "CUDAExecutionProvider"
+                    ]
+                }
+            ]
+        }
+    },
+    "evaluators": {
+        "evaluator": {
+            "type": "LMEvaluator",
+            "tasks": [
+                "arc_challenge",
+                "arc_easy",
+                "mmlu",
+                "hellaswag",
+                "mmlu_stem",
+                "openbookqa"
+            ],
+            "batch_size": 32,
+            "provider_options": {
+                "enable_skip_layer_norm_strict_mode": "1"
+            }
+        }
+    },
+    "passes": {
+        "modelbuilder": {
+            "type": "OnnxConversion",
+            "device": "cuda"
+        },
+        "optimization": {
+            "type": "OrtTransformersOptimization",
+            "opt_level": 99
+        },
+        "hqq": {
+            "type": "OnnxHqqQuantization"
+        }
+    },
+    "evaluator": "evaluator",
+    "target": "target_system",
+    "host": "host_system",
+    "cache_dir": "cache",
+    "clean_cache": true,
+    "evaluate_input_model": true,
+    "output_dir": "models/phi4/cpu/mlas"
+}
