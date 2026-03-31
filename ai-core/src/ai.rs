@@ -53,7 +53,7 @@ pub trait ModelProvider {
     async fn setup(&self) -> Result<()>;
 
     /// Ask the model something
-    async fn ask(&self, prompt: &String) -> Result<String>;
+    async fn ask(&self, prompt: &String, tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>) -> Result<()>;
 }
 
 pub struct Models {
@@ -93,19 +93,26 @@ impl Models {
         Ok(())
     }
 
-    pub async fn ask(&self, prompt: String, selected_model_ids: HashSet<String>) -> Result<Vec<(String, String)>> {
-        let mut responses = vec![];
+    pub async fn ask(&self, prompt: String, selected_model_ids: HashSet<String>, tx_ui: tokio::sync::mpsc::UnboundedSender<(String, anyhow::Result<String>)>) {
         for model in self
             .models
             .iter()
             .filter(|model| model.status() == ProviderStatus::Ready && selected_model_ids.contains(model.id()))
         {
-            match model.ask(&prompt).await {
-                std::result::Result::Ok(res) => responses.push((model.id().to_string(), res)),
-                std::result::Result::Err(err) => responses.push((model.id().to_string(), format!("Error: {:?}", err))),
+            let (tx_model, mut rx_model) = tokio::sync::mpsc::unbounded_channel::<anyhow::Result<String>>();
+            let tx_ui_clone = tx_ui.clone();
+            let model_id_str = model.id().to_string();
+            
+            // Bridge task to attach Model ID to each token token
+            tokio::spawn(async move {
+                while let Some(res) = rx_model.recv().await {
+                    let _ = tx_ui_clone.send((model_id_str.clone(), res));
+                }
+            });
+
+            if let Err(e) = model.ask(&prompt, tx_model.clone()).await {
+                let _ = tx_model.send(Err(e));
             }
         }
-
-        Ok(responses)
     }
 }

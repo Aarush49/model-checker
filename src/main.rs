@@ -1,5 +1,5 @@
-
 mod layout;
+mod message;
 mod neural_engines;
 mod orchestrator;
 
@@ -23,12 +23,6 @@ pub enum Route {
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
-
-#[derive(Clone, Debug)]
-pub enum Message {
-    User { content: String },
-    AI { responses: Vec<(String, String)> },
-}
 
 fn main() {
     dioxus::launch(App);

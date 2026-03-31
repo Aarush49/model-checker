@@ -66,7 +66,7 @@ impl ModelProvider for ChatGPT {
         Ok(())
     }
 
-    async fn ask(&self, prompt: &String) -> Result<String> {
+    async fn ask(&self, prompt: &String, tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>) -> Result<()> {
         let url = "https://api.openai.com/v1/chat/completions";
 
         let payload = json!({
@@ -103,7 +103,9 @@ impl ModelProvider for ChatGPT {
             .map(|c| c.message.content)
             .context("ChatGPT API returned an empty or malformed response")?;
 
-        Ok(answer)
+        let _ = tx.send(Ok(answer));
+
+        Ok(())
     }
 }
 

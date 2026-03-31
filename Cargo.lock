@@ -3218,6 +3218,7 @@ dependencies = [
  "ai-core",
  "anyhow",
  "dioxus",
+ "tokio",
 ]
 
 [[package]]

@@ -249,7 +249,6 @@ impl OAuth {
     where
         T: DeserializeOwned,
     {
-        println!("{:#?}", self.get_token().await?);
         let request = request.bearer_auth(self.get_token().await?).build()?;
         let response = self.http_client.execute(request).await?;
 

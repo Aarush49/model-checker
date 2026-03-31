@@ -1,7 +1,8 @@
-use crate::Message;
+use crate::message::{Message, ChatMessage};
 use ai_core::ai::{Models, ProviderStatus};
 use dioxus::prelude::*;
 use std::collections::HashSet;
+
 #[component]
 pub fn OrchestratorPage() -> Element {
     let mut messages = use_signal(Vec::<Message>::new);
@@ -26,9 +27,11 @@ pub fn OrchestratorPage() -> Element {
 
     let models_data = {
         let registry = models_registry.read();
-        registry.models.iter().map(|m| {
-            (m.id().to_string(), m.name().to_string(), m.status())
-        }).collect::<Vec<_>>()
+        registry
+            .models
+            .iter()
+            .map(|m| (m.id().to_string(), m.name().to_string(), m.status()))
+            .collect::<Vec<_>>()
     };
 
     let mut send_message = move || {
@@ -42,19 +45,62 @@ pub fn OrchestratorPage() -> Element {
 
             prompt.set(String::new());
 
-            spawn(async move {
-                let result = models_registry
+            let (tx_ui, mut rx_ui) =
+                tokio::sync::mpsc::unbounded_channel::<(String, anyhow::Result<String>)>();
+
+            // Track which message index belongs to which model
+            let mut model_indices = std::collections::HashMap::new();
+
+            for model_id in selected.iter() {
+                let model_name = models_registry
                     .read()
-                    .ask(current_prompt, selected)
-                    .await;
-
-                println!("Result from ask: {:?}", result);
-
-                let responses = result.unwrap_or_default();
+                    .models
+                    .iter()
+                    .find(|m| m.id() == model_id)
+                    .map(|m| m.name().to_string())
+                    .unwrap_or_else(|| "Unknown Model".to_string());
 
                 messages.write().push(Message::AI {
-                    responses,
+                    model_id: model_id.clone(),
+                    model_name,
+                    response: String::new(),
+                    error: None,
+                    is_finished: false,
                 });
+
+                let msg_index = messages.read().len() - 1;
+                model_indices.insert(model_id.clone(), msg_index);
+            }
+
+            // Listener task: routes tokens from the collective stream to per-model message slots
+            spawn(async move {
+                while let Some((model_id, result)) = rx_ui.recv().await {
+                    if let Some(&msg_index) = model_indices.get(&model_id) {
+                        let mut msgs = messages.write();
+                        if let Some(Message::AI { response, error, .. }) = msgs.get_mut(msg_index) {
+                            match result {
+                                Ok(token) => response.push_str(&token),
+                                Err(e) => *error = Some(e.to_string()),
+                            }
+                        }
+                    }
+                }
+
+                // Channel closed — mark all models as finished
+                let mut msgs = messages.write();
+                for &msg_index in model_indices.values() {
+                    if let Some(Message::AI { is_finished, .. }) = msgs.get_mut(msg_index) {
+                        *is_finished = true;
+                    }
+                }
+            });
+
+            // Execution Loop
+            spawn(async move {
+                models_registry
+                    .read()
+                    .ask(current_prompt, selected, tx_ui)
+                    .await;
             });
         }
     };
@@ -138,46 +184,7 @@ pub fn OrchestratorPage() -> Element {
             div { class: "flex-1 overflow-y-auto px-8 pb-32 pt-6",
                 div { class: "max-w-4xl mx-auto space-y-12",
                     for msg in messages() {
-                        match msg {
-                            Message::User { content } => rsx! {
-                                div { class: "flex flex-col items-end gap-2 group",
-                                    div { class: "max-w-[80%] bg-surface-container-highest px-6 py-4 rounded-2xl rounded-tr-none border border-outline-variant/20 shadow-lg",
-                                        p { class: "text-on-surface font-body leading-relaxed whitespace-pre-wrap", "{content}" }
-                                    }
-                                    span { class: "text-[10px] text-on-surface-variant font-label opacity-0 group-hover:opacity-100 transition-opacity",
-                                        "Just now • Orchestrated Request"
-                                    }
-                                }
-                            },
-                            Message::AI { responses } => rsx! {
-                                div { class: "space-y-6",
-                                    for (model_name, response_text) in responses {
-                                        div { class: "bg-surface-container p-6 rounded-2xl border border-primary/20 relative overflow-hidden",
-                                            div { class: "absolute top-0 left-0 w-1 h-full bg-primary" }
-                                            div { class: "flex items-center justify-between mb-6",
-                                                div { class: "flex items-center gap-3",
-                                                    span { class: "material-symbols-outlined text-primary", "bolt" }
-                                                    span { class: "font-headline font-bold text-sm tracking-tight text-on-surface", "{model_name}" }
-                                                    div { class: "h-1 w-1 rounded-full bg-outline-variant" }
-                                                    span { class: "text-[10px] text-on-surface-variant font-label uppercase", "Reasoning Complete" }
-                                                }
-                                            }
-                                            div { class: "space-y-4 font-body text-on-surface/90 leading-relaxed text-sm whitespace-pre-wrap",
-                                                "{response_text}"
-                                            }
-                                            div { class: "mt-6 flex items-center gap-4 border-t border-outline-variant/10 pt-4",
-                                                button { class: "flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-secondary transition-colors",
-                                                    span { class: "material-symbols-outlined text-sm", "thumb_up" }
-                                                }
-                                                button { class: "flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-tertiary transition-colors",
-                                                    span { class: "material-symbols-outlined text-sm", "content_copy" }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        ChatMessage { msg }
                     }
                 }
             }

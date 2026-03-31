@@ -141,16 +141,16 @@ impl LocalModel {
         Ok(())
     }
 
-    pub async fn ask(&self, prompt: String, max_tokens: usize) -> Result<String> {
+    pub async fn ask(&self, prompt: String, max_tokens: usize, tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>) -> Result<()> {
         // Ensure prompt not empty
         if prompt.trim().is_empty() {
-            return Ok("".to_string());
+            return Ok(());
         }
 
         let session_arc = Arc::clone(&self.session);
         let tokenizer_arc = Arc::clone(&self.tokenizer);
 
-        let generated_text = tokio::task::spawn_blocking(move || -> Result<String> {
+        let _generated_text = tokio::task::spawn_blocking(move || -> Result<()> {
             let mut session_guard = session_arc.lock().unwrap();
             let session = session_guard.as_mut().context("Model not loaded!")?;
 
@@ -165,11 +165,12 @@ impl LocalModel {
                 .into_iter()
                 .filter_map(|t| tokenizer.token_to_id(t))
                 .collect();
+            let mut current_input_ids: Vec<i64> = encoding
+                .get_ids()
+                .iter()
+                .map(|&i| i as i64)
+                .collect();
 
-            let mut current_input_ids: Vec<i64> =
-                encoding.get_ids().iter().map(|&x| x as i64).collect();
-
-            let mut generated_text = String::new();
 
             // =================================================================
             // PHASE 1: KV CACHE DISCOVERY & ALLOCATION
@@ -315,12 +316,7 @@ impl LocalModel {
                     .decode(&[next_token_id as u32], true)
                     .map_err(|e| anyhow::anyhow!("Detokenization failed: {e}"))?;
 
-                generated_text.push_str(&token_str);
-
-                // Stream it live to the console so you can watch it go fast!
-                print!("{}", token_str);
-                use std::io::Write;
-                std::io::stdout().flush().unwrap();
+                let _ = tx.send(Ok(token_str.clone()));
 
                 // 6. THE CRITICAL PHASE SHIFT
                 // We add the length of the tokens we just processed to the historical count.
@@ -331,10 +327,10 @@ impl LocalModel {
                 all_historical_tokens.push(next_token_id);
             }
 
-            Ok(generated_text)
+            Ok(())
         })
         .await??;
 
-        Ok(generated_text)
+        Ok(())
     }
 }

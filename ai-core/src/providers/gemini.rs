@@ -86,7 +86,7 @@ impl ModelProvider for Gemini {
         Ok(())
     }
 
-    async fn ask(&self, prompt: &String) -> Result<String> {
+    async fn ask(&self, prompt: &String, tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>) -> Result<()> {
         const URL: &str =
             "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
 
@@ -114,7 +114,9 @@ impl ModelProvider for Gemini {
             .map(|p| p.text)
             .context("Gemini API returned an empty or malformed response")?;
 
-        Ok(answer)
+        let _ = tx.send(Ok(answer));
+
+        Ok(())
     }
 }
 
