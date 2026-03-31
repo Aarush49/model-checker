@@ -45,7 +45,7 @@ pub fn NeuralEnginesPage() -> Element {
                                         });
                                     }
                                 }
-                                div { class: "w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary group-hover:ring-4 group-hover:ring-primary/10 transition-all" }
+                                div { class: "w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary ring-2 ring-primary/15 hover:ring-primary/30 transition-all" }
                             }
                         }
                         div { class: format!("space-y-6 z-10 {}", if model.status() != ProviderStatus::Ready { "opacity-50" } else { "" }),
