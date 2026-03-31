@@ -112,29 +112,24 @@ pub fn OrchestratorPage() -> Element {
         main { class: "ml-64 pt-0 h-screen flex flex-col bg-surface",
             // Model Selector Row
             section { class: "shrink-0 relative z-20 bg-surface-container-low/50 border-b border-outline-variant/10",
-                div { class: "max-w-7xl mx-auto px-8 py-6",
-                    div { class: "flex items-center justify-between mb-4",
-                    div { class: "flex flex-col",
-                        span { class: "text-[10px] uppercase tracking-widest text-secondary font-bold font-label mb-1",
-                            "Active Ensemble"
-                        }
+                div { class: "max-w-7xl mx-auto px-8 py-3",
+                    div { class: "flex items-center justify-between",
                         h2 { class: "text-2xl font-headline font-bold text-on-surface",
                             "Orchestrator"
                         }
-                    }
-                    div { class: "flex items-center gap-2",
-                        span { class: "text-xs text-on-surface-variant font-label mr-2",
-                            "{models_registry.read().models.len()} Models Loaded"
+                        div { class: "flex items-center gap-2",
+                            span { class: "text-xs text-on-surface-variant font-label mr-2",
+                                "{models_registry.read().models.len()} Models Loaded"
+                            }
                         }
                     }
-                    }
                 }
-                div { class: "max-w-7xl mx-auto px-8 pb-4",
-                    div { class: "flex gap-4 overflow-x-auto pt-2 pb-2 scrollbar-hide",
+                div { class: "max-w-7xl mx-auto px-8 pb-3",
+                    div { class: "flex gap-2 overflow-x-auto pb-1 scrollbar-hide flex-wrap",
                     for (index, (model_id, model_name, model_status)) in models_data.into_iter().enumerate() {
-                        div {
+                        button {
                             key: "{index}",
-                            class: format!("select-none cursor-pointer flex-shrink-0 w-64 p-4 rounded-xl bg-surface-container border-2 flex flex-col gap-3 relative overflow-hidden group transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl hover:z-10 {}", if selected_models.read().contains(&model_id) { "border-primary/80 bg-primary/5 shadow-[0_0_15px_rgba(0,227,253,0.1)]" } else if model_status == ProviderStatus::Ready { "border-primary/20 opacity-70 hover:opacity-100 hover:border-primary/40 hover:bg-surface-container-highest" } else { "border-outline-variant/20 opacity-60 hover:opacity-90 hover:border-outline-variant/40" }),
+                            class: format!("select-none cursor-pointer flex-shrink-0 px-3 py-1.5 rounded-lg border flex items-center gap-2 text-xs font-bold font-headline transition-all duration-200 {}", if selected_models.read().contains(&model_id) { "border-primary/80 bg-primary/10 text-primary shadow-[0_0_10px_rgba(0,227,253,0.08)]" } else if model_status == ProviderStatus::Ready { "border-outline-variant/30 text-on-surface-variant hover:border-primary/40 hover:bg-surface-container-highest hover:text-on-surface" } else { "border-outline-variant/20 text-on-surface-variant/50 opacity-60" }),
                             onclick: move |_| {
                                 let mut selected = selected_models.write();
                                 if selected.contains(&model_id) {
@@ -144,62 +139,37 @@ pub fn OrchestratorPage() -> Element {
                                 }
                             },
                             if selected_models.read().contains(&model_id) {
-                                div { class: "absolute top-0 right-0 p-2 transition-opacity",
-                                    span { class: "material-symbols-outlined text-primary text-sm", style: "font-variation-settings: 'FILL' 1;", "check_circle" }
-                                }
+                                span { class: "material-symbols-outlined text-[14px] text-primary", style: "font-variation-settings: 'FILL' 1;", "check_circle" }
                             } else {
-                                div { class: "absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity",
-                                    span { class: "material-symbols-outlined text-outline text-sm opacity-50 hover:opacity-100", "add_circle" }
-                                }
-                            }
-                            div { class: "flex items-center gap-3",
-                                div { class: "w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center",
-                                    span { class: "material-symbols-outlined text-primary", "bolt" }
-                                }
-                                div {
-                                    h3 { class: "font-bold text-sm font-headline truncate", "{model_name}" }
-                                    p { class: "text-[10px] text-on-surface-variant truncate", "AI Provider" }
-                                }
-                            }
-                            div { class: "flex items-center justify-between mt-2",
                                 match model_status {
-                                    ProviderStatus::Ready => rsx!{ span { class: "text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded uppercase font-bold tracking-tighter", "Ready" } },
-                                    ProviderStatus::RequiresAuth => rsx!{ span { class: "text-[10px] bg-error/10 text-error px-2 py-0.5 rounded uppercase font-bold tracking-tighter", "Needs Auth" } },
-                                    ProviderStatus::RequiresInstallation => rsx!{ span { class: "text-[10px] bg-tertiary/10 text-tertiary px-2 py-0.5 rounded uppercase font-bold tracking-tighter", "Install" } },
-                                }
-                                div { class: "flex gap-1",
-                                    div { class: "w-1.5 h-1.5 rounded-full bg-secondary" }
-                                    div { class: "w-1.5 h-1.5 rounded-full bg-secondary" }
-                                    div { class: "w-1.5 h-1.5 rounded-full bg-secondary/30" }
+                                    ProviderStatus::Ready => rsx!{ span { class: "w-1.5 h-1.5 rounded-full bg-primary/50" } },
+                                    ProviderStatus::RequiresAuth => rsx!{ span { class: "w-1.5 h-1.5 rounded-full bg-error/50" } },
+                                    ProviderStatus::RequiresInstallation => rsx!{ span { class: "w-1.5 h-1.5 rounded-full bg-tertiary/50" } },
                                 }
                             }
+                            "{model_name}"
                         }
                     }
                     // Add More Button
-                    button { class: "flex-shrink-0 w-24 rounded-xl border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center gap-2 hover:bg-surface-container-highest hover:border-primary/50 transition-all group",
-                        span { class: "material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors", "add_circle" }
-                        span { class: "text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant group-hover:text-on-surface", "Models" }
+                    button { class: "flex-shrink-0 px-3 py-1.5 rounded-lg border border-dashed border-outline-variant/30 flex items-center gap-1.5 text-xs text-on-surface-variant hover:border-primary/50 hover:text-primary transition-all",
+                        span { class: "material-symbols-outlined text-[14px]", "add" }
+                        "Add"
                     }
                     }
                 }
             }
             // Chat Area
-            div { class: "flex-1 overflow-y-auto px-8 pb-32 pt-6",
-                div { class: "max-w-4xl mx-auto space-y-12",
+            div { class: "flex-1 overflow-y-auto px-8 pb-44 pt-6",
+                div { class: "max-w-4xl mx-auto space-y-8",
                     for msg in messages() {
                         ChatMessage { msg }
                     }
                 }
             }
             // Bottom Message Bar
-            footer { class: "fixed bottom-0 right-0 w-[calc(100%-16rem)] p-8",
+            footer { class: "fixed bottom-0 right-0 w-[calc(100%-16rem)] px-8 pb-4 pt-2",
                 div { class: "max-w-4xl mx-auto",
                     div { class: "glass-panel bg-surface-container-highest/60 backdrop-blur-xl border border-outline-variant/30 rounded-2xl p-2 shadow-2xl",
-                        div { class: "flex items-center gap-2 px-4 py-2 mb-1",
-                            span { class: "text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter",
-                                "Shift + Enter for new line"
-                            }
-                        }
                         div { class: "flex items-end gap-3 px-2",
                             textarea {
                                 class: "flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/50 font-body py-4 px-4 resize-none min-h-[56px] outline-none",
