@@ -10,7 +10,8 @@ use ndarray::{Array2, ArrayD};
 use ort::{
     ep::{CPU},
     session::{Session, builder::GraphOptimizationLevel},
-    value::Tensor,
+    value::{Tensor, DynValue},
+    memory::{MemoryInfo, AllocationDevice, AllocatorType, MemoryType},
 };
 use tokenizers::Tokenizer;
 use tokio::{
@@ -173,8 +174,8 @@ impl LocalModel {
             // =================================================================
             // PHASE 1: KV CACHE DISCOVERY & ALLOCATION
             // =================================================================
-            // We use a HashMap to store the historical math states for every layer.
-            let mut past_kv_state: HashMap<String, ArrayD<f32>> = HashMap::new();
+            // We use a HashMap to store the historical math states for every layer natively via ort Values.
+            let mut past_kv_state: HashMap<String, DynValue> = HashMap::new();
 
             // We map the input names (past_) to the output names (present_)
             let mut kv_names: Vec<(String, String)> = Vec::new();
@@ -212,13 +213,16 @@ impl LocalModel {
                     let empty_kv =
                         ArrayD::<f32>::from_shape_vec(vec![1, num_heads, 0, head_dim], vec![])
                             .unwrap();
-                    past_kv_state.insert(input.name().to_string(), empty_kv);
+                    let empty_tensor = Tensor::from_array(empty_kv).unwrap().into_dyn();
+                    past_kv_state.insert(input.name().to_string(), empty_tensor);
                 }
             }
 
             let mut past_seq_len = 0;
 
             let mut all_historical_tokens = current_input_ids.clone();
+
+            let out_mem_info = MemoryInfo::new(AllocationDevice::CPU, 0, AllocatorType::Device, MemoryType::CPUOutput)?;
 
             // =================================================================
             // PHASE 2: THE INFERENCE LOOP
@@ -235,45 +239,38 @@ impl LocalModel {
                 let pos_ids: Vec<i64> = (past_seq_len as i64..total_seq_len as i64).collect();
                 let position_ids_tensor = Array2::from_shape_vec((1, current_seq_len), pos_ids)?;
 
-                // 2. Package everything into a dynamic list of inputs
-                // We use a Vec because we don't know exactly how many KV layers the model has
-                let mut run_inputs = Vec::new();
-                run_inputs.push((
-                    "input_ids".to_string(),
-                    Tensor::from_array(input_tensor)?.into_dyn(),
-                ));
+                // 2. Package everything into a dynamic list of inputs via IoBinding
+                let mut binding = session.create_binding()?;
+                
+                let input_tensor_dyn = Tensor::from_array(input_tensor)?.into_dyn();
+                binding.bind_input("input_ids", &input_tensor_dyn)?;
+                
+                let attention_mask_dyn = Tensor::from_array(attention_mask_tensor)?.into_dyn();
                 if session.inputs().iter().any(|i| i.name() == "attention_mask") {
-                    run_inputs.push((
-                        "attention_mask".to_string(),
-                        Tensor::from_array(attention_mask_tensor)?.into_dyn(),
-                    ));
+                    binding.bind_input("attention_mask", &attention_mask_dyn)?;
                 }
+                
+                let position_ids_dyn = Tensor::from_array(position_ids_tensor)?.into_dyn();
                 if session.inputs().iter().any(|i| i.name() == "position_ids") {
-                    run_inputs.push((
-                        "position_ids".to_string(),
-                        Tensor::from_array(position_ids_tensor)?.into_dyn(),
-                    ));
+                    binding.bind_input("position_ids", &position_ids_dyn)?;
                 }
 
                 // Inject the 64 historical memory states!
                 for (past_name, past_tensor) in &past_kv_state {
-                    run_inputs.push((
-                        past_name.clone(),
-                        Tensor::from_array(past_tensor.clone())?.into_dyn(),
-                    ));
+                    binding.bind_input(past_name.as_str(), past_tensor)?;
+                }
+
+                binding.bind_output_to_device("logits", &out_mem_info)?;
+                for (_, present_name) in &kv_names {
+                    binding.bind_output_to_device(present_name.as_str(), &out_mem_info)?;
                 }
 
                 // 3. RUN THE NPU/CPU
-                let outputs = session.run(run_inputs)?;
+                let mut outputs = session.run_binding(&binding)?;
 
-                // 4. Update our HashMap with the AI's newest memories
+                // 4. Update our HashMap with the AI's newest memories natively
                 for (past_name, present_name) in &kv_names {
-                    let (shape, data) =
-                        outputs[present_name.as_str()].try_extract_tensor::<f32>()?;
-
-                    let shape_usize: Vec<usize> = shape.iter().map(|&x| x as usize).collect();
-                    let present_tensor = ArrayD::from_shape_vec(shape_usize, data.to_vec())?;
-
+                    let present_tensor = outputs.remove(present_name.as_str()).unwrap();
                     past_kv_state.insert(past_name.clone(), present_tensor);
                 }
 
