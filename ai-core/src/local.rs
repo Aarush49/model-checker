@@ -6,7 +6,6 @@ use std::{
 
 use anyhow::{Context, Ok, Result, anyhow};
 use futures_util::{StreamExt, future::join_all};
-use half::f16;
 use ndarray::{Array2, ArrayD};
 use ort::{
     ep::{CPU},
@@ -117,8 +116,10 @@ impl LocalModel {
             ];
 
             let session = Session::builder()?
-                .with_optimization_level(GraphOptimizationLevel::Disable)
+                .with_optimization_level(GraphOptimizationLevel::Level3)
                 .map_err(|e| anyhow::anyhow!("Failed to set optimization level: {}", e))?
+                .with_intra_threads(std::thread::available_parallelism().unwrap().get())
+                .map_err(|e| anyhow::anyhow!("Failed to set intra threads: {}", e))?
                 .with_memory_pattern(true)
                 .map_err(|e| anyhow!("Failed to set memory pattern: {e}"))?
                 .with_parallel_execution(true)
@@ -170,7 +171,7 @@ impl LocalModel {
             // PHASE 1: KV CACHE DISCOVERY & ALLOCATION
             // =================================================================
             // We use a HashMap to store the historical math states for every layer.
-            let mut past_kv_state: HashMap<String, ArrayD<f16>> = HashMap::new();
+            let mut past_kv_state: HashMap<String, ArrayD<f32>> = HashMap::new();
 
             // We map the input names (past_) to the output names (present_)
             let mut kv_names: Vec<(String, String)> = Vec::new();
@@ -206,7 +207,7 @@ impl LocalModel {
 
                     // Create the initial empty tensor (Sequence Length is 0)
                     let empty_kv =
-                        ArrayD::<f16>::from_shape_vec(vec![1, num_heads, 0, head_dim], vec![])
+                        ArrayD::<f32>::from_shape_vec(vec![1, num_heads, 0, head_dim], vec![])
                             .unwrap();
                     past_kv_state.insert(input.name().to_string(), empty_kv);
                 }
@@ -238,14 +239,18 @@ impl LocalModel {
                     "input_ids".to_string(),
                     Tensor::from_array(input_tensor)?.into_dyn(),
                 ));
-                run_inputs.push((
-                    "attention_mask".to_string(),
-                    Tensor::from_array(attention_mask_tensor)?.into_dyn(),
-                ));
-                run_inputs.push((
-                    "position_ids".to_string(),
-                    Tensor::from_array(position_ids_tensor)?.into_dyn(),
-                ));
+                if session.inputs().iter().any(|i| i.name() == "attention_mask") {
+                    run_inputs.push((
+                        "attention_mask".to_string(),
+                        Tensor::from_array(attention_mask_tensor)?.into_dyn(),
+                    ));
+                }
+                if session.inputs().iter().any(|i| i.name() == "position_ids") {
+                    run_inputs.push((
+                        "position_ids".to_string(),
+                        Tensor::from_array(position_ids_tensor)?.into_dyn(),
+                    ));
+                }
 
                 // Inject the 64 historical memory states!
                 for (past_name, past_tensor) in &past_kv_state {
@@ -261,7 +266,7 @@ impl LocalModel {
                 // 4. Update our HashMap with the AI's newest memories
                 for (past_name, present_name) in &kv_names {
                     let (shape, data) =
-                        outputs[present_name.as_str()].try_extract_tensor::<f16>()?;
+                        outputs[present_name.as_str()].try_extract_tensor::<f32>()?;
 
                     let shape_usize: Vec<usize> = shape.iter().map(|&x| x as usize).collect();
                     let present_tensor = ArrayD::from_shape_vec(shape_usize, data.to_vec())?;
@@ -270,7 +275,7 @@ impl LocalModel {
                 }
 
                 // 5. Calculate the next word
-                let (shape, data) = outputs["logits"].try_extract_tensor::<f16>()?;
+                let (shape, data) = outputs["logits"].try_extract_tensor::<f32>()?;
 
                 let seq_len = shape[1] as usize;
                 let vocab_size = shape[2] as usize;
@@ -284,7 +289,7 @@ impl LocalModel {
                 let penalty = 1.2_f32;
 
                 for (id, &score) in last_token_logits.iter().enumerate() {
-                    let mut score = score.to_f32();
+                    let mut score = score;
 
                     if all_historical_tokens.contains(&(id as i64)) {
                         if score > 0.0 {

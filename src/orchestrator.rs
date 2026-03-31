@@ -43,11 +43,14 @@ pub fn OrchestratorPage() -> Element {
             prompt.set(String::new());
 
             spawn(async move {
-                let responses = models_registry
+                let result = models_registry
                     .read()
                     .ask(current_prompt, selected)
-                    .await
-                    .unwrap_or_default();
+                    .await;
+
+                println!("Result from ask: {:?}", result);
+
+                let responses = result.unwrap_or_default();
 
                 messages.write().push(Message::AI {
                     responses,

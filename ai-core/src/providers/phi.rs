@@ -95,6 +95,6 @@ impl ModelProvider for Phi {
     async fn ask(&self, prompt: &String) -> Result<String> {
         self.handler.load().await?;
 
-        self.handler.ask(format!("<|system|>\nYou are a helpful AI assistant.<|end|>\n<|user|>\n{prompt}<|end|>\n<|assistant|>\n"), 1024).await
+        self.handler.ask(format!("<|system|>\nYou are a helpful AI assistant. Keep answers short and concise.<|end|>\n<|user|>\n{prompt}<|end|>\n<|assistant|>\n"), 512).await
     }
 }
