@@ -57,9 +57,9 @@ pub fn OrchestratorPage() -> Element {
     };
 
     rsx! {
-        main { class: "ml-64 pt-8 h-screen flex flex-col bg-surface",
+        main { class: "ml-64 pt-0 h-screen flex flex-col bg-surface",
             // Model Selector Row
-            section { class: "px-8 py-6 bg-surface-container-low/50 shrink-0",
+            section { class: "px-8 py-6 shrink-0 relative z-20",
                 div { class: "flex items-center justify-between mb-4",
                     div { class: "flex flex-col",
                         span { class: "text-[10px] uppercase tracking-widest text-secondary font-bold font-label mb-1",
@@ -73,14 +73,13 @@ pub fn OrchestratorPage() -> Element {
                         span { class: "text-xs text-on-surface-variant font-label mr-2",
                             "{models_registry.read().models.len()} Models Loaded"
                         }
-
                     }
                 }
-                div { class: "flex gap-4 overflow-x-auto pb-2 scrollbar-hide",
+                div { class: "flex gap-4 overflow-x-auto pt-2 pb-2 scrollbar-hide",
                     for (index, (model_id, model_name, model_status)) in models_data.into_iter().enumerate() {
                         div {
                             key: "{index}",
-                            class: format!("select-none cursor-pointer flex-shrink-0 w-64 p-4 rounded-xl bg-surface-container border-2 flex flex-col gap-3 relative overflow-hidden group transition-all duration-300 {}", if selected_models.read().contains(&model_id) { "border-primary/80 bg-primary/5 shadow-[0_0_15px_rgba(0,227,253,0.1)]" } else if model_status == ProviderStatus::Ready { "border-primary/20 opacity-70 hover:opacity-100 hover:border-primary/40" } else { "border-outline-variant/20 opacity-60 hover:opacity-90 hover:border-outline-variant/40" }),
+                            class: format!("select-none cursor-pointer flex-shrink-0 w-64 p-4 rounded-xl bg-surface-container border-2 flex flex-col gap-3 relative overflow-hidden group transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl hover:z-10 {}", if selected_models.read().contains(&model_id) { "border-primary/80 bg-primary/5 shadow-[0_0_15px_rgba(0,227,253,0.1)]" } else if model_status == ProviderStatus::Ready { "border-primary/20 opacity-70 hover:opacity-100 hover:border-primary/40 hover:bg-surface-container-highest" } else { "border-outline-variant/20 opacity-60 hover:opacity-90 hover:border-outline-variant/40" }),
                             onclick: move |_| {
                                 let mut selected = selected_models.write();
                                 if selected.contains(&model_id) {
