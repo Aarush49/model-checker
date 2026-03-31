@@ -5,7 +5,7 @@ use std::collections::HashSet;
 
 #[component]
 pub fn OrchestratorPage() -> Element {
-    let mut messages = use_signal(Vec::<Message>::new);
+    let mut messages = use_context::<Signal<Vec<Message>>>();
     let mut prompt = use_signal(String::new);
     let models_registry = use_context::<Signal<Models>>();
     let mut selected_models = use_signal(|| HashSet::<String>::new());

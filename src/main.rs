@@ -4,6 +4,7 @@ mod neural_engines;
 mod orchestrator;
 
 use ai_core::ai::Models;
+use message::Message;
 
 use dioxus::prelude::*;
 use layout::Layout;
@@ -31,6 +32,7 @@ fn main() {
 #[component]
 fn App() -> Element {
     let mut models_registry = use_context_provider(|| Signal::new(Models::new()));
+    let _ = use_context_provider(|| Signal::new(Vec::<Message>::new()));
 
     use_effect(move || {
         spawn(async move {
