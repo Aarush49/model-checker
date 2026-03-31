@@ -50,7 +50,7 @@ pub trait ModelProvider {
     /// Set the current temperature for the model
     fn set_temperature(&self, _temperature: f32) {}
 
-    async fn setup(&self) -> Result<()>;
+    async fn setup(&self, progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>) -> Result<()>;
 
     /// Ask the model something
     async fn ask(
@@ -87,11 +87,11 @@ impl Models {
         Ok(Self { models })
     }
 
-    pub async fn setup(&self, index: usize) -> Result<()> {
+    pub async fn setup(&self, index: usize, progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>) -> Result<()> {
         self.models
             .get(index)
             .ok_or_else(|| anyhow!("Model not found at index {}", index))?
-            .setup()
+            .setup(progress_tx)
             .await?;
 
         Ok(())

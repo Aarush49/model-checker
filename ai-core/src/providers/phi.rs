@@ -64,7 +64,7 @@ impl ModelProvider for Phi {
         *self.temperature.write().unwrap() = temperature;
     }
 
-    async fn setup(&self) -> Result<()> {
+    async fn setup(&self, progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>) -> Result<()> {
         let download_urls = vec![
             // 1. The Core Graph (The "Brain" structure)
             "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/model.onnx".to_string(),
@@ -85,7 +85,7 @@ impl ModelProvider for Phi {
             "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/added_tokens.json".to_string(),
         ];
 
-        self.handler.setup(&self.http_client, download_urls).await?;
+        self.handler.setup(&self.http_client, download_urls, progress_tx).await?;
 
         *self.status.write().unwrap() = ProviderStatus::Ready;
 

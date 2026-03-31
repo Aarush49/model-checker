@@ -77,7 +77,7 @@ impl ModelProvider for Gemini {
         *self.temperature.write().unwrap() = temperature;
     }
 
-    async fn setup(&self) -> Result<()> {
+    async fn setup(&self, _progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>) -> Result<()> {
         match self.oauth.setup().await {
             std::result::Result::Ok(_) => *self.status.write().unwrap() = ProviderStatus::Ready,
             Err(_) => *self.status.write().unwrap() = ProviderStatus::RequiresAuth,

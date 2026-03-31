@@ -57,13 +57,20 @@ impl LocalModel {
         &self,
         http_client: &reqwest::Client,
         download_urls: Vec<String>,
+        progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>,
     ) -> Result<()> {
         let mut downloads = vec![];
 
         fs::create_dir_all(&self.model_dir).await?;
 
+        let downloaded = Arc::new(std::sync::atomic::AtomicU64::new(0));
+        let total = Arc::new(std::sync::atomic::AtomicU64::new(0));
+
         for url in download_urls {
             let http_client = http_client.clone();
+            let downloaded = Arc::clone(&downloaded);
+            let total = Arc::clone(&total);
+            let progress_tx = progress_tx.clone();
 
             let file_name = url.trim().split('/').last().unwrap_or("unknown_file");
             let file_path = self.model_dir.join(file_name);
@@ -76,11 +83,25 @@ impl LocalModel {
                     .context(format!("Failed to create file at {:?}", file_path))?;
                 let response = http_client.get(url).send().await?.error_for_status()?;
 
+                // Add this file's size to the total
+                if let Some(content_length) = response.content_length() {
+                    total.fetch_add(content_length, std::sync::atomic::Ordering::Relaxed);
+                }
+
                 let mut stream = response.bytes_stream();
                 while let Some(chunk) = stream.next().await {
                     let bytes = chunk?;
+                    let len = bytes.len() as u64;
 
                     file.write_all(&bytes).await?;
+
+                    let new_downloaded =
+                        downloaded.fetch_add(len, std::sync::atomic::Ordering::Relaxed) + len;
+                    let current_total = total.load(std::sync::atomic::Ordering::Relaxed);
+
+                    if let Some(tx) = &progress_tx {
+                        let _ = tx.send((new_downloaded, current_total));
+                    }
                 }
 
                 Ok(())
