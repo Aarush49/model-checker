@@ -97,8 +97,8 @@ pub fn NeuralEnginesPage() -> Element {
                         if model.status() == ProviderStatus::Ready {
                             div { class: "mt-auto z-10 pt-4",
                                 div { class: "p-4 rounded-lg bg-secondary/5 border border-secondary/10 flex items-center gap-3",
-                                    div { class: "w-2 h-2 rounded-full bg-secondary animate-pulse shadow-[0_0_10px_rgba(0,227,253,0.5)]" }
-                                    span { class: "text-[10px] font-bold uppercase tracking-widest text-secondary", "ACTIVE: READY" }
+                                    div { class: "w-2 h-2 rounded-full bg-[#00ff9d] animate-pulse shadow-[0_0_15px_rgba(0,255,157,0.7)]" }
+                                    span { class: "text-[10px] font-bold uppercase tracking-widest text-[#00ff9d]", "ACTIVE: READY" }
                                 }
                             }
                         }
