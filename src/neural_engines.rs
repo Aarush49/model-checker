@@ -7,8 +7,9 @@ pub fn NeuralEnginesPage() -> Element {
 
     rsx! {
         main { class: "ml-64 pt-12 pb-12 px-12 h-screen bg-background overflow-y-auto",
-            // Editorial Header
-            section { class: "mb-12",
+            div { class: "max-w-7xl mx-auto",
+                // Editorial Header
+                section { class: "mb-12",
                 p { class: "font-label text-xs uppercase tracking-[0.2em] text-secondary mb-2 font-semibold",
                     "Core Configuration"
                 }
@@ -67,9 +68,22 @@ pub fn NeuralEnginesPage() -> Element {
                             div {
                                 div { class: "flex justify-between items-center mb-2",
                                     label { class: "text-[10px] font-bold uppercase tracking-widest text-outline", "Temperature" }
-                                    span { class: "text-xs font-mono text-secondary", "0.72" }
+                                    span { class: "text-xs font-mono text-secondary", "{model.temperature():.2}" }
                                 }
-                                input { class: "w-full", "type": "range" }
+                                input {
+                                    class: "w-full accent-secondary",
+                                    "type": "range",
+                                    min: "0.0",
+                                    max: "2.0",
+                                    step: "0.01",
+                                    value: "{model.temperature()}",
+                                    oninput: move |e| {
+                                        if let Ok(temp) = e.value().parse::<f32>() {
+                                            models_registry.read().models[index].set_temperature(temp);
+                                            models_registry.write();
+                                        }
+                                    }
+                                }
                             }
                             div {
                                 label { class: "block text-[10px] font-bold uppercase tracking-widest text-outline mb-2", "Context Window" }
@@ -94,6 +108,7 @@ pub fn NeuralEnginesPage() -> Element {
 
 
 
+            }
         }
     }
 }

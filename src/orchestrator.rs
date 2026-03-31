@@ -62,8 +62,9 @@ pub fn OrchestratorPage() -> Element {
     rsx! {
         main { class: "ml-64 pt-0 h-screen flex flex-col bg-surface",
             // Model Selector Row
-            section { class: "px-8 py-6 shrink-0 relative z-20",
-                div { class: "flex items-center justify-between mb-4",
+            section { class: "shrink-0 relative z-20 bg-surface-container-low/50 border-b border-outline-variant/10",
+                div { class: "max-w-7xl mx-auto px-8 py-6",
+                    div { class: "flex items-center justify-between mb-4",
                     div { class: "flex flex-col",
                         span { class: "text-[10px] uppercase tracking-widest text-secondary font-bold font-label mb-1",
                             "Active Ensemble"
@@ -77,8 +78,10 @@ pub fn OrchestratorPage() -> Element {
                             "{models_registry.read().models.len()} Models Loaded"
                         }
                     }
+                    }
                 }
-                div { class: "flex gap-4 overflow-x-auto pt-2 pb-2 scrollbar-hide",
+                div { class: "max-w-7xl mx-auto px-8 pb-4",
+                    div { class: "flex gap-4 overflow-x-auto pt-2 pb-2 scrollbar-hide",
                     for (index, (model_id, model_name, model_status)) in models_data.into_iter().enumerate() {
                         div {
                             key: "{index}",
@@ -127,6 +130,7 @@ pub fn OrchestratorPage() -> Element {
                     button { class: "flex-shrink-0 w-24 rounded-xl border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center gap-2 hover:bg-surface-container-highest hover:border-primary/50 transition-all group",
                         span { class: "material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors", "add_circle" }
                         span { class: "text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant group-hover:text-on-surface", "Models" }
+                    }
                     }
                 }
             }

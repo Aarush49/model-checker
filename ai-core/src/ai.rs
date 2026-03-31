@@ -43,6 +43,13 @@ pub trait ModelProvider {
     /// Indicate if the model is ready to be used, or if the user needs to login or install the model
     fn status(&self) -> ProviderStatus;
 
+    /// Get the current temperature for the model
+    fn temperature(&self) -> f32 {
+        0.7
+    }
+    /// Set the current temperature for the model
+    fn set_temperature(&self, _temperature: f32) {}
+
     async fn setup(&self) -> Result<()>;
 
     /// Ask the model something

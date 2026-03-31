@@ -14,6 +14,7 @@ pub struct Phi {
     http_client: reqwest::Client,
     handler: LocalModel,
     status: RwLock<ProviderStatus>,
+    temperature: RwLock<f32>,
 }
 
 impl Phi {
@@ -29,6 +30,7 @@ impl Phi {
             http_client: http_client.clone(),
             handler,
             status: RwLock::new(status),
+            temperature: RwLock::new(0.7),
         }
     }
 }
@@ -52,6 +54,14 @@ impl ModelProvider for Phi {
 
     fn status(&self) -> ProviderStatus {
         *self.status.read().unwrap()
+    }
+    
+    fn temperature(&self) -> f32 {
+        *self.temperature.read().unwrap()
+    }
+
+    fn set_temperature(&self, temperature: f32) {
+        *self.temperature.write().unwrap() = temperature;
     }
 
     async fn setup(&self) -> Result<()> {
