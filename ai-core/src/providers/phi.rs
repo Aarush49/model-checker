@@ -55,7 +55,7 @@ impl ModelProvider for Phi {
     fn status(&self) -> ProviderStatus {
         *self.status.read().unwrap()
     }
-    
+
     fn temperature(&self) -> f32 {
         *self.temperature.read().unwrap()
     }
@@ -92,7 +92,11 @@ impl ModelProvider for Phi {
         Ok(())
     }
 
-    async fn ask(&self, prompt: &String, tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>) -> Result<()> {
+    async fn ask(
+        &self,
+        prompt: &String,
+        tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>,
+    ) -> Result<()> {
         self.handler.load().await?;
 
         self.handler.ask(format!("<|system|>\nYou are a helpful AI assistant. Keep answers short and concise.<|end|>\n<|user|>\n{prompt}<|end|>\n<|assistant|>\n"), 512, tx).await

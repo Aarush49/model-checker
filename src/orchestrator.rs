@@ -1,4 +1,4 @@
-use crate::message::{Message, ChatMessage};
+use crate::message::{ChatMessage, Message};
 use ai_core::ai::{Models, ProviderStatus};
 use dioxus::prelude::*;
 use std::collections::HashSet;
@@ -77,7 +77,10 @@ pub fn OrchestratorPage() -> Element {
                 while let Some((model_id, result)) = rx_ui.recv().await {
                     if let Some(&msg_index) = model_indices.get(&model_id) {
                         let mut msgs = messages.write();
-                        if let Some(Message::AI { response, error, .. }) = msgs.get_mut(msg_index) {
+                        if let Some(Message::AI {
+                            response, error, ..
+                        }) = msgs.get_mut(msg_index)
+                        {
                             match result {
                                 Ok(token) => response.push_str(&token),
                                 Err(e) => *error = Some(e.to_string()),

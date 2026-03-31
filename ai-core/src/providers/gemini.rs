@@ -86,7 +86,11 @@ impl ModelProvider for Gemini {
         Ok(())
     }
 
-    async fn ask(&self, prompt: &String, tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>) -> Result<()> {
+    async fn ask(
+        &self,
+        prompt: &String,
+        tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>,
+    ) -> Result<()> {
         const URL: &str =
             "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
 

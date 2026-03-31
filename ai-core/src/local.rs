@@ -8,10 +8,10 @@ use anyhow::{Context, Ok, Result, anyhow};
 use futures_util::{StreamExt, future::join_all};
 use ndarray::{Array2, ArrayD};
 use ort::{
-    ep::{CPU},
+    ep::CPU,
+    memory::{AllocationDevice, AllocatorType, MemoryInfo, MemoryType},
     session::{Session, builder::GraphOptimizationLevel},
-    value::{Tensor, DynValue},
-    memory::{MemoryInfo, AllocationDevice, AllocatorType, MemoryType},
+    value::{DynValue, Tensor},
 };
 use tokenizers::Tokenizer;
 use tokio::{
@@ -112,9 +112,7 @@ impl LocalModel {
             let tokenizer = Tokenizer::from_file(&tokenizer_path)
                 .map_err(|e| anyhow::anyhow!("Failed to parse tokenizer.json: {}", e))?;
 
-            let execution_providers = vec![
-                CPU::default().build(),
-            ];
+            let execution_providers = vec![CPU::default().build()];
 
             let session = Session::builder()?
                 .with_optimization_level(GraphOptimizationLevel::Level3)
@@ -141,7 +139,12 @@ impl LocalModel {
         Ok(())
     }
 
-    pub async fn ask(&self, prompt: String, max_tokens: usize, tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>) -> Result<()> {
+    pub async fn ask(
+        &self,
+        prompt: String,
+        max_tokens: usize,
+        tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>,
+    ) -> Result<()> {
         // Ensure prompt not empty
         if prompt.trim().is_empty() {
             return Ok(());
@@ -161,16 +164,13 @@ impl LocalModel {
                 .encode(prompt, true)
                 .map_err(|e| anyhow::anyhow!("Tokenization failed: {e}"))?;
 
-            let stop_tokens: Vec<u32> = vec!["<|im_end|>", "<|end|>", "<|eot_id|>", "<|endoftext|>"]
-                .into_iter()
-                .filter_map(|t| tokenizer.token_to_id(t))
-                .collect();
-            let mut current_input_ids: Vec<i64> = encoding
-                .get_ids()
-                .iter()
-                .map(|&i| i as i64)
-                .collect();
-
+            let stop_tokens: Vec<u32> =
+                vec!["<|im_end|>", "<|end|>", "<|eot_id|>", "<|endoftext|>"]
+                    .into_iter()
+                    .filter_map(|t| tokenizer.token_to_id(t))
+                    .collect();
+            let mut current_input_ids: Vec<i64> =
+                encoding.get_ids().iter().map(|&i| i as i64).collect();
 
             // =================================================================
             // PHASE 1: KV CACHE DISCOVERY & ALLOCATION
@@ -223,7 +223,12 @@ impl LocalModel {
 
             let mut all_historical_tokens = current_input_ids.clone();
 
-            let out_mem_info = MemoryInfo::new(AllocationDevice::CPU, 0, AllocatorType::Device, MemoryType::CPUOutput)?;
+            let out_mem_info = MemoryInfo::new(
+                AllocationDevice::CPU,
+                0,
+                AllocatorType::Device,
+                MemoryType::CPUOutput,
+            )?;
 
             // =================================================================
             // PHASE 2: THE INFERENCE LOOP
@@ -242,15 +247,19 @@ impl LocalModel {
 
                 // 2. Package everything into a dynamic list of inputs via IoBinding
                 let mut binding = session.create_binding()?;
-                
+
                 let input_tensor_dyn = Tensor::from_array(input_tensor)?.into_dyn();
                 binding.bind_input("input_ids", &input_tensor_dyn)?;
-                
+
                 let attention_mask_dyn = Tensor::from_array(attention_mask_tensor)?.into_dyn();
-                if session.inputs().iter().any(|i| i.name() == "attention_mask") {
+                if session
+                    .inputs()
+                    .iter()
+                    .any(|i| i.name() == "attention_mask")
+                {
                     binding.bind_input("attention_mask", &attention_mask_dyn)?;
                 }
-                
+
                 let position_ids_dyn = Tensor::from_array(position_ids_tensor)?.into_dyn();
                 if session.inputs().iter().any(|i| i.name() == "position_ids") {
                     binding.bind_input("position_ids", &position_ids_dyn)?;
@@ -294,7 +303,9 @@ impl LocalModel {
 
                     // Apply repetition penalty, but DO NOT penalize our stop tokens!
                     // Otherwise the model will never be allowed to stop generating.
-                    if all_historical_tokens.contains(&(id as i64)) && !stop_tokens.contains(&(id as u32)) {
+                    if all_historical_tokens.contains(&(id as i64))
+                        && !stop_tokens.contains(&(id as u32))
+                    {
                         if score > 0.0 {
                             score /= penalty;
                         } else {

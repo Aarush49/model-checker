@@ -66,7 +66,11 @@ impl ModelProvider for ChatGPT {
         Ok(())
     }
 
-    async fn ask(&self, prompt: &String, tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>) -> Result<()> {
+    async fn ask(
+        &self,
+        prompt: &String,
+        tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>,
+    ) -> Result<()> {
         let url = "https://api.openai.com/v1/chat/completions";
 
         let payload = json!({
@@ -82,7 +86,8 @@ impl ModelProvider for ChatGPT {
 
         let api_key = self.api_key.read().unwrap().clone();
 
-        let response = self.client
+        let response = self
+            .client
             .post(url)
             .header(header::AUTHORIZATION, format!("Bearer {}", api_key))
             .json(&payload)

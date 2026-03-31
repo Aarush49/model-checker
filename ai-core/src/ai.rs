@@ -53,7 +53,11 @@ pub trait ModelProvider {
     async fn setup(&self) -> Result<()>;
 
     /// Ask the model something
-    async fn ask(&self, prompt: &String, tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>) -> Result<()>;
+    async fn ask(
+        &self,
+        prompt: &String,
+        tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>,
+    ) -> Result<()>;
 }
 
 pub struct Models {
@@ -93,16 +97,20 @@ impl Models {
         Ok(())
     }
 
-    pub async fn ask(&self, prompt: String, selected_model_ids: HashSet<String>, tx_ui: tokio::sync::mpsc::UnboundedSender<(String, anyhow::Result<String>)>) {
-        for model in self
-            .models
-            .iter()
-            .filter(|model| model.status() == ProviderStatus::Ready && selected_model_ids.contains(model.id()))
-        {
-            let (tx_model, mut rx_model) = tokio::sync::mpsc::unbounded_channel::<anyhow::Result<String>>();
+    pub async fn ask(
+        &self,
+        prompt: String,
+        selected_model_ids: HashSet<String>,
+        tx_ui: tokio::sync::mpsc::UnboundedSender<(String, anyhow::Result<String>)>,
+    ) {
+        for model in self.models.iter().filter(|model| {
+            model.status() == ProviderStatus::Ready && selected_model_ids.contains(model.id())
+        }) {
+            let (tx_model, mut rx_model) =
+                tokio::sync::mpsc::unbounded_channel::<anyhow::Result<String>>();
             let tx_ui_clone = tx_ui.clone();
             let model_id_str = model.id().to_string();
-            
+
             // Bridge task to attach Model ID to each token token
             tokio::spawn(async move {
                 while let Some(res) = rx_model.recv().await {
