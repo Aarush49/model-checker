@@ -6,7 +6,7 @@ pub fn NeuralEnginesPage() -> Element {
     let mut models_registry = use_context::<Signal<Models>>();
 
     rsx! {
-        main { class: "ml-64 pt-24 pb-12 px-12 h-screen bg-background overflow-y-auto",
+        main { class: "ml-64 pt-12 pb-12 px-12 h-screen bg-background overflow-y-auto",
             // Editorial Header
             section { class: "mb-12",
                 p { class: "font-label text-xs uppercase tracking-[0.2em] text-secondary mb-2 font-semibold",
@@ -24,7 +24,7 @@ pub fn NeuralEnginesPage() -> Element {
                 for (index, model) in models_registry.read().models.iter().enumerate() {
                     div {
                         key: "{index}",
-                        class: format!("bg-surface-container p-8 rounded-xl flex flex-col gap-8 relative overflow-hidden group {}", if model.status() == ProviderStatus::Ready { "border border-primary/20" } else { "" }),
+                        class: "bg-surface-container p-8 rounded-xl flex flex-col gap-8 relative overflow-hidden group transition-all duration-300 hover:bg-surface-container-highest hover:shadow-2xl hover:border-primary/50 border border-outline-variant/10 hover:translate-y-[-4px]",
                         div { class: "absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" }
                         div { class: "flex justify-between items-start z-10",
                             div {
@@ -175,21 +175,7 @@ pub fn NeuralEnginesPage() -> Element {
                     }
                 }
             }
-            // Footer Decoration
-            div { class: "mt-24 flex justify-between items-end opacity-20",
-                div {
-                    p { class: "font-headline text-4xl font-black text-on-surface-variant", "00101011" }
-                    p { class: "text-[10px] uppercase tracking-[0.4em] font-medium", "System Kernel Integrity: Nominal" }
-                }
-                div { class: "text-right",
-                    p { class: "text-[10px] uppercase tracking-[0.2em] font-medium mb-1", "Architecture V4.2.0" }
-                    div { class: "flex gap-1 justify-end",
-                        div { class: "w-1 h-1 bg-on-surface-variant" }
-                        div { class: "w-1 h-1 bg-on-surface-variant" }
-                        div { class: "w-1 h-1 bg-secondary" }
-                    }
-                }
-            }
+
         }
     }
 }
