@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 #[component]
 pub fn BenchmarkingPage() -> Element {
     rsx! {
-        main { class: "ml-64 pt-24 pb-12 px-12 h-screen bg-transparent overflow-y-auto",
+        main { class: "ml-64 pt-12 pb-12 px-12 h-screen bg-transparent overflow-y-auto",
             // Hero Editorial Header
             section { class: "mb-12 flex justify-between items-end",
                 div { class: "max-w-2xl",
@@ -20,10 +20,7 @@ pub fn BenchmarkingPage() -> Element {
                     }
                 }
                 div { class: "flex gap-4",
-                    button { class: "px-6 py-3 rounded-lg bg-surface-container-highest text-on-surface hover:bg-surface-bright transition-all flex items-center gap-2 font-medium",
-                        span { class: "material-symbols-outlined", "filter_list" }
-                        "Filters"
-                    }
+
                     button { class: "px-6 py-3 rounded-lg bg-gradient-to-r from-primary to-primary-dim text-on-primary-fixed font-bold flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all",
                         span { class: "material-symbols-outlined", "refresh" }
                         "Re-run Prompt"

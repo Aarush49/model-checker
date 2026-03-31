@@ -57,7 +57,7 @@ pub fn OrchestratorPage() -> Element {
     };
 
     rsx! {
-        main { class: "ml-64 pt-16 h-screen flex flex-col bg-surface",
+        main { class: "ml-64 pt-8 h-screen flex flex-col bg-surface",
             // Model Selector Row
             section { class: "px-8 py-6 bg-surface-container-low/50 shrink-0",
                 div { class: "flex items-center justify-between mb-4",
@@ -73,9 +73,7 @@ pub fn OrchestratorPage() -> Element {
                         span { class: "text-xs text-on-surface-variant font-label mr-2",
                             "{models_registry.read().models.len()} Models Loaded"
                         }
-                        button { class: "p-2 rounded-lg bg-surface-container-highest border border-outline-variant/30 text-on-surface",
-                            span { class: "material-symbols-outlined text-sm", "tune" }
-                        }
+
                     }
                 }
                 div { class: "flex gap-4 overflow-x-auto pb-2 scrollbar-hide",
@@ -182,15 +180,6 @@ pub fn OrchestratorPage() -> Element {
                 div { class: "max-w-4xl mx-auto",
                     div { class: "glass-panel bg-surface-container-highest/60 backdrop-blur-xl border border-outline-variant/30 rounded-2xl p-2 shadow-2xl",
                         div { class: "flex items-center gap-2 px-4 py-2 mb-1",
-                            button { class: "flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-highest/50 border border-outline-variant/20 hover:border-secondary transition-all group",
-                                span { class: "material-symbols-outlined text-sm text-on-surface-variant group-hover:text-secondary", "language" }
-                                span { class: "text-xs font-label text-on-surface-variant group-hover:text-on-surface", "Search Web" }
-                            }
-                            button { class: "flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-highest/50 border border-outline-variant/20 hover:border-secondary transition-all group",
-                                span { class: "material-symbols-outlined text-sm text-on-surface-variant group-hover:text-secondary", "attach_file" }
-                                span { class: "text-xs font-label text-on-surface-variant group-hover:text-on-surface", "Attach Docs" }
-                            }
-                            div { class: "h-4 w-[1px] bg-outline-variant/30 mx-2" }
                             span { class: "text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter",
                                 "Shift + Enter for new line"
                             }
@@ -216,16 +205,7 @@ pub fn OrchestratorPage() -> Element {
                             }
                         }
                     }
-                    div { class: "mt-4 flex justify-center gap-8",
-                        div { class: "flex items-center gap-2 text-[10px] text-on-surface-variant/50 font-label tracking-widest uppercase",
-                            span { class: "w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(0,227,253,0.5)]" }
-                            "Neural Gateway: Active"
-                        }
-                        div { class: "flex items-center gap-2 text-[10px] text-on-surface-variant/50 font-label tracking-widest uppercase",
-                            span { class: "material-symbols-outlined text-sm", "security" }
-                            "Encrypted Session"
-                        }
-                    }
+
                 }
             }
         }
