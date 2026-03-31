@@ -160,7 +160,10 @@ impl LocalModel {
                 .encode(prompt, true)
                 .map_err(|e| anyhow::anyhow!("Tokenization failed: {e}"))?;
 
-            let end_token_id = tokenizer.token_to_id("<|im_end|>").unwrap_or(0);
+            let stop_tokens: Vec<u32> = vec!["<|im_end|>", "<|end|>", "<|eot_id|>", "<|endoftext|>"]
+                .into_iter()
+                .filter_map(|t| tokenizer.token_to_id(t))
+                .collect();
 
             let mut current_input_ids: Vec<i64> =
                 encoding.get_ids().iter().map(|&x| x as i64).collect();
@@ -286,12 +289,14 @@ impl LocalModel {
                 let mut next_token_id = 0;
                 let mut highest_score = f32::NEG_INFINITY;
 
-                let penalty = 1.2_f32;
+                let penalty = 1.05_f32;
 
                 for (id, &score) in last_token_logits.iter().enumerate() {
                     let mut score = score;
 
-                    if all_historical_tokens.contains(&(id as i64)) {
+                    // Apply repetition penalty, but DO NOT penalize our stop tokens!
+                    // Otherwise the model will never be allowed to stop generating.
+                    if all_historical_tokens.contains(&(id as i64)) && !stop_tokens.contains(&(id as u32)) {
                         if score > 0.0 {
                             score /= penalty;
                         } else {
@@ -305,7 +310,7 @@ impl LocalModel {
                     }
                 }
 
-                if next_token_id as u32 == end_token_id {
+                if stop_tokens.contains(&(next_token_id as u32)) {
                     break;
                 }
 
