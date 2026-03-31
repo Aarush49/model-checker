@@ -15,6 +15,7 @@ use crate::{
 pub struct Gemini {
     oauth: OAuth,
     status: RwLock<ProviderStatus>,
+    temperature: RwLock<f32>,
 }
 
 impl Gemini {
@@ -50,6 +51,7 @@ impl Gemini {
         Ok(Self {
             oauth,
             status: RwLock::new(status),
+            temperature: RwLock::new(0.7),
         })
     }
 }
@@ -65,6 +67,14 @@ impl ModelProvider for Gemini {
 
     fn status(&self) -> ProviderStatus {
         return *self.status.read().unwrap();
+    }
+
+    fn temperature(&self) -> f32 {
+        *self.temperature.read().unwrap()
+    }
+
+    fn set_temperature(&self, temperature: f32) {
+        *self.temperature.write().unwrap() = temperature;
     }
 
     async fn setup(&self) -> Result<()> {
@@ -83,7 +93,10 @@ impl ModelProvider for Gemini {
         let payload = json!({
             "contents": [{
                 "parts": [{"text": prompt}]
-            }]
+            }],
+            "generationConfig": {
+                "temperature": *self.temperature.read().unwrap(),
+            }
         });
 
         let request = self

@@ -12,6 +12,7 @@ pub struct ChatGPT {
     client: Client,
     api_key: RwLock<String>,
     status: RwLock<ProviderStatus>,
+    temperature: RwLock<f32>,
 }
 
 impl ChatGPT {
@@ -27,6 +28,7 @@ impl ChatGPT {
             client: http_client.clone(),
             api_key: RwLock::new(api_key),
             status: RwLock::new(status),
+            temperature: RwLock::new(0.7),
         }
     }
 }
@@ -45,6 +47,14 @@ impl ModelProvider for ChatGPT {
         return *self.status.read().unwrap();
     }
 
+    fn temperature(&self) -> f32 {
+        *self.temperature.read().unwrap()
+    }
+
+    fn set_temperature(&self, temperature: f32) {
+        *self.temperature.write().unwrap() = temperature;
+    }
+
     async fn setup(&self) -> Result<()> {
         let api_key = std::env::var("OPENAI_API_KEY").unwrap_or_default();
         if !api_key.is_empty() {
@@ -61,6 +71,7 @@ impl ModelProvider for ChatGPT {
 
         let payload = json!({
             "model": "gpt-4o-mini",
+            "temperature": *self.temperature.read().unwrap(),
             "messages": [
                 {
                     "role": "user",
