@@ -96,7 +96,7 @@ impl LocalModel {
         Ok(())
     }
 
-    pub fn load(&self) -> Result<()> {
+    pub async fn load(&self) -> Result<()> {
         if self.session.lock().unwrap().is_some() && self.tokenizer.lock().unwrap().is_some() {
             return Ok(());
         }
@@ -104,30 +104,38 @@ impl LocalModel {
         let tokenizer_path = self.model_dir.join("tokenizer.json");
         let model_path = self.model_dir.join("model.onnx");
 
-        println!("Loading tokenizer into memory...");
-        let tokenizer = Tokenizer::from_file(&tokenizer_path)
-            .map_err(|e| anyhow::anyhow!("Failed to parse tokenizer.json: {}", e))?;
+        let session_arc = Arc::clone(&self.session);
+        let tokenizer_arc = Arc::clone(&self.tokenizer);
 
-        let execution_providers = vec![
-            CPU::default().build(),
-        ];
+        tokio::task::spawn_blocking(move || -> Result<()> {
+            println!("Loading tokenizer into memory...");
+            let tokenizer = Tokenizer::from_file(&tokenizer_path)
+                .map_err(|e| anyhow::anyhow!("Failed to parse tokenizer.json: {}", e))?;
 
-        let session = Session::builder()?
-            .with_optimization_level(GraphOptimizationLevel::Disable)
-            .map_err(|e| anyhow::anyhow!("Failed to set optimization level: {}", e))?
-            .with_memory_pattern(true)
-            .map_err(|e| anyhow!("Failed to set memory pattern: {e}"))?
-            .with_parallel_execution(true)
-            .map_err(|e| anyhow!("Failed to set parallel execution: {e}"))?
-            .with_execution_providers(execution_providers)
-            .map_err(|e| anyhow::anyhow!("Failed to set execution providers: {}", e))?
-            .commit_from_file(&model_path)?;
+            let execution_providers = vec![
+                CPU::default().build(),
+            ];
 
-        // 2. Lock the mutexes again just to insert the newly loaded engines!
-        *self.tokenizer.lock().unwrap() = Some(tokenizer);
-        *self.session.lock().unwrap() = Some(session);
+            let session = Session::builder()?
+                .with_optimization_level(GraphOptimizationLevel::Disable)
+                .map_err(|e| anyhow::anyhow!("Failed to set optimization level: {}", e))?
+                .with_memory_pattern(true)
+                .map_err(|e| anyhow!("Failed to set memory pattern: {e}"))?
+                .with_parallel_execution(true)
+                .map_err(|e| anyhow!("Failed to set parallel execution: {e}"))?
+                .with_execution_providers(execution_providers)
+                .map_err(|e| anyhow::anyhow!("Failed to set execution providers: {}", e))?
+                .commit_from_file(&model_path)?;
 
-        println!("Model loaded successfully!");
+            // 2. Lock the mutexes again just to insert the newly loaded engines!
+            *tokenizer_arc.lock().unwrap() = Some(tokenizer);
+            *session_arc.lock().unwrap() = Some(session);
+
+            println!("Model loaded successfully!");
+            Ok(())
+        })
+        .await??;
+
         Ok(())
     }
 
