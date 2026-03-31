@@ -59,19 +59,7 @@ pub fn Layout() -> Element {
                             "Orchestrator"
                         }
                     }
-                    Link {
-                        to: Route::BenchmarkingPage {},
-                        class: "px-4 py-3 mx-2 flex items-center gap-3 transition-all duration-200 active:scale-[0.98] rounded-lg group text-[#dee5ff]/60 hover:text-[#dee5ff] hover:bg-[#141f38]",
-                        active_class: "text-[#5D3FD3] bg-[#141f38] font-bold",
-                        span {
-                            class: "material-symbols-outlined",
-                            "compare_arrows"
-                        }
-                        span {
-                            class: "font-body font-medium",
-                            "Benchmarking"
-                        }
-                    }
+
                     Link {
                         to: Route::NeuralEnginesPage {},
                         class: "px-4 py-3 mx-2 flex items-center gap-3 transition-all duration-200 active:scale-[0.98] rounded-lg group text-[#dee5ff]/60 hover:text-[#dee5ff] hover:bg-[#141f38]",

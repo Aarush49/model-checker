@@ -1,10 +1,10 @@
-mod benchmarking;
+
 mod layout;
 mod neural_engines;
 mod orchestrator;
 
 use ai_core::ai::Models;
-use benchmarking::BenchmarkingPage;
+
 use dioxus::prelude::*;
 use layout::Layout;
 use neural_engines::NeuralEnginesPage;
@@ -16,8 +16,7 @@ pub enum Route {
     #[layout(Layout)]
     #[route("/")]
     OrchestratorPage {},
-    #[route("/benchmarking")]
-    BenchmarkingPage {},
+
     #[route("/settings")]
     NeuralEnginesPage {},
 }
