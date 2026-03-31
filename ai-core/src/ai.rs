@@ -93,7 +93,10 @@ impl Models {
             .iter()
             .filter(|model| model.status() == ProviderStatus::Ready && selected_model_ids.contains(model.id()))
         {
-            responses.push((model.id().to_string(), model.ask(&prompt).await?));
+            match model.ask(&prompt).await {
+                std::result::Result::Ok(res) => responses.push((model.id().to_string(), res)),
+                std::result::Result::Err(err) => responses.push((model.id().to_string(), format!("Error: {:?}", err))),
+            }
         }
 
         Ok(responses)
