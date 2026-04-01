@@ -30,6 +30,8 @@ pub enum LocalStatus {
     Installed,
     /// The model is not installed
     NotInstalled,
+    /// The directory exists but the install didn't finish (e.g. interrupted download)
+    PartiallyInstalled,
 }
 
 impl LocalModel {
@@ -46,10 +48,17 @@ impl LocalModel {
         }
     }
     pub async fn status(&self) -> LocalStatus {
-        if self.model_dir.exists() {
+        if !self.model_dir.exists() {
+            return LocalStatus::NotInstalled;
+        }
+
+        // The marker file is written only after ALL downloads succeed.
+        // If the directory exists but the marker is missing, the install was interrupted.
+        let marker = self.model_dir.join(".install_complete");
+        if marker.exists() {
             LocalStatus::Installed
         } else {
-            LocalStatus::NotInstalled
+            LocalStatus::PartiallyInstalled
         }
     }
 
@@ -59,9 +68,17 @@ impl LocalModel {
         download_urls: Vec<String>,
         progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>,
     ) -> Result<()> {
-        let mut downloads = vec![];
+        // If the directory exists but installation was incomplete, wipe it and start fresh.
+        // This handles interrupted downloads, corrupted files, etc.
+        let marker = self.model_dir.join(".install_complete");
+        if self.model_dir.exists() && !marker.exists() {
+            println!("Detected incomplete installation at {:?}, cleaning up...", self.model_dir);
+            fs::remove_dir_all(&self.model_dir).await.ok();
+        }
 
         fs::create_dir_all(&self.model_dir).await?;
+
+        let mut downloads = vec![];
 
         let downloaded = Arc::new(std::sync::atomic::AtomicU64::new(0));
         let total = Arc::new(std::sync::atomic::AtomicU64::new(0));
@@ -75,7 +92,7 @@ impl LocalModel {
             let file_name = url.trim().split('/').last().unwrap_or("unknown_file");
             let file_path = self.model_dir.join(file_name);
 
-            println!("Attempting to create: {:?}", file_path);
+            println!("Downloading: {:?}", file_path);
 
             downloads.push(tokio::spawn(async move {
                 let mut file = File::create(&file_path)
@@ -113,6 +130,9 @@ impl LocalModel {
         for res in results {
             res??;
         }
+
+        // All downloads succeeded — write the completion marker.
+        File::create(&marker).await?;
 
         Ok(())
     }
