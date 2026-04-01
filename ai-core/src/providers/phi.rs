@@ -23,7 +23,7 @@ impl Phi {
 
         let status = match handler.status().await {
             LocalStatus::Installed => ProviderStatus::Ready,
-            LocalStatus::NotInstalled => ProviderStatus::RequiresInstallation,
+            LocalStatus::NotInstalled | LocalStatus::PartiallyInstalled => ProviderStatus::RequiresInstallation,
         };
 
         Self {
