@@ -15,7 +15,7 @@ futures-util = "0.3"
 keyring = { version = "3", features = ["windows-native", "apple-native", "sync-secret-service"] }
 time = "0.3"
 anyhow.workspace = true
-serde = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 dirs = "6.0"
 ort = { version = "2.0.0-rc.12", features = ["half", "directml", "qnn"] }

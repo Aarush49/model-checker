@@ -13,11 +13,50 @@ use ort::{
     session::{Session, builder::GraphOptimizationLevel},
     value::{DynValue, Tensor},
 };
+use serde::Deserialize;
 use tokenizers::Tokenizer;
 use tokio::{
     fs::{self, File},
     io::AsyncWriteExt,
 };
+
+/// Represents the `search` section of a genai_config.json file.
+/// These are the generation parameters shipped with every ONNX model.
+#[derive(Debug, Clone, Deserialize)]
+pub struct GenaiSearchConfig {
+    #[serde(default = "default_temperature")]
+    pub temperature: f32,
+    #[serde(default = "default_repetition_penalty")]
+    pub repetition_penalty: f32,
+    #[serde(default = "default_top_k")]
+    pub top_k: usize,
+    #[serde(default = "default_top_p")]
+    pub top_p: f32,
+    #[serde(default)]
+    pub max_length: usize,
+}
+
+fn default_temperature() -> f32 { 1.0 }
+fn default_repetition_penalty() -> f32 { 1.0 }
+fn default_top_k() -> usize { 1 }
+fn default_top_p() -> f32 { 1.0 }
+
+impl Default for GenaiSearchConfig {
+    fn default() -> Self {
+        Self {
+            temperature: default_temperature(),
+            repetition_penalty: default_repetition_penalty(),
+            top_k: default_top_k(),
+            top_p: default_top_p(),
+            max_length: 512,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct GenaiConfig {
+    search: GenaiSearchConfig,
+}
 
 pub struct LocalModel {
     model_dir: PathBuf,
@@ -47,6 +86,19 @@ impl LocalModel {
             tokenizer: Arc::new(Mutex::new(None)),
         }
     }
+
+    /// Read the generation config from the model's genai_config.json.
+    /// Returns the `search` section containing temperature, top_k, etc.
+    pub async fn read_genai_config(&self) -> Result<GenaiSearchConfig> {
+        let config_path = self.model_dir.join("genai_config.json");
+        let contents = fs::read_to_string(&config_path)
+            .await
+            .context(format!("Failed to read {:?}", config_path))?;
+        let config: GenaiConfig = serde_json::from_str(&contents)
+            .context("Failed to parse genai_config.json")?;
+        Ok(config.search)
+    }
+
     pub async fn status(&self) -> LocalStatus {
         if !self.model_dir.exists() {
             return LocalStatus::NotInstalled;
@@ -183,7 +235,7 @@ impl LocalModel {
     pub async fn ask(
         &self,
         prompt: String,
-        max_tokens: usize,
+        config: GenaiSearchConfig,
         tx: tokio::sync::mpsc::UnboundedSender<anyhow::Result<String>>,
     ) -> Result<()> {
         // Ensure prompt not empty
@@ -274,7 +326,10 @@ impl LocalModel {
             // =================================================================
             // PHASE 2: THE INFERENCE LOOP
             // =================================================================
-            for _ in 0..max_tokens {
+            // Use max_length from config if set, otherwise fall back to a reasonable default
+            let generation_limit = if config.max_length > 0 { config.max_length } else { 512 };
+
+            for _ in 0..generation_limit {
                 let current_seq_len = current_input_ids.len();
                 let total_seq_len = past_seq_len + current_seq_len;
 
@@ -334,31 +389,97 @@ impl LocalModel {
                 let start_idx = (seq_len - 1) * vocab_size;
                 let last_token_logits = &data[start_idx..start_idx + vocab_size];
 
-                let mut next_token_id = 0;
-                let mut highest_score = f32::NEG_INFINITY;
-
-                let penalty = 1.05_f32;
-
-                for (id, &score) in last_token_logits.iter().enumerate() {
-                    let mut score = score;
-
-                    // Apply repetition penalty, but DO NOT penalize our stop tokens!
-                    // Otherwise the model will never be allowed to stop generating.
-                    if all_historical_tokens.contains(&(id as i64))
-                        && !stop_tokens.contains(&(id as u32))
-                    {
-                        if score > 0.0 {
-                            score /= penalty;
-                        } else {
-                            score *= penalty; // For negative logits, multiplying makes them more negative
+                // ── STEP A: Repetition penalty ─────────────────────────────
+                // Uses the value from genai_config.json instead of a hardcoded constant.
+                // Penalizes tokens that have already appeared, but never penalizes stop tokens.
+                let mut logits: Vec<f32> = last_token_logits
+                    .iter()
+                    .enumerate()
+                    .map(|(id, &score)| {
+                        let mut s = score;
+                        if config.repetition_penalty != 1.0
+                            && all_historical_tokens.contains(&(id as i64))
+                            && !stop_tokens.contains(&(id as u32))
+                        {
+                            if s > 0.0 {
+                                s /= config.repetition_penalty;
+                            } else {
+                                s *= config.repetition_penalty;
+                            }
                         }
-                    }
+                        s
+                    })
+                    .collect();
 
-                    if score > highest_score {
-                        highest_score = score;
-                        next_token_id = id as i64;
+                // ── STEP B: Temperature scaling ────────────────────────────
+                // temperature == 0 or very small → greedy (argmax)
+                let is_greedy = config.temperature <= 1e-8;
+                if !is_greedy {
+                    for l in logits.iter_mut() {
+                        *l /= config.temperature;
                     }
                 }
+
+                let next_token_id: i64 = if is_greedy {
+                    // Greedy: pick the highest logit directly
+                    logits
+                        .iter()
+                        .enumerate()
+                        .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                        .map(|(id, _)| id as i64)
+                        .unwrap_or(0)
+                } else {
+                    // ── STEP C: Softmax ─────────────────────────────────────
+                    let max_logit = logits.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
+                    let exps: Vec<f32> = logits.iter().map(|&l| (l - max_logit).exp()).collect();
+                    let sum_exp: f32 = exps.iter().sum();
+                    let probs: Vec<f32> = exps.iter().map(|&e| e / sum_exp).collect();
+
+                    // Build (token_id, probability) pairs sorted by probability descending
+                    let mut indexed: Vec<(usize, f32)> = probs.iter().enumerate().map(|(i, &p)| (i, p)).collect();
+                    indexed.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+
+                    // ── STEP D: Top-K filtering ────────────────────────────
+                    // Keep only the top_k most probable tokens
+                    if config.top_k > 0 && config.top_k < indexed.len() {
+                        indexed.truncate(config.top_k);
+                    }
+
+                    // ── STEP E: Top-P (nucleus) filtering ──────────────────
+                    // Keep the smallest set of tokens whose cumulative probability >= top_p
+                    if config.top_p < 1.0 && config.top_p > 0.0 {
+                        let mut cumulative = 0.0;
+                        let mut cutoff = indexed.len();
+                        for (i, (_, p)) in indexed.iter().enumerate() {
+                            cumulative += p;
+                            if cumulative >= config.top_p {
+                                cutoff = i + 1;
+                                break;
+                            }
+                        }
+                        indexed.truncate(cutoff);
+                    }
+
+                    // ── STEP F: Re-normalize and sample ────────────────────
+                    let filtered_sum: f32 = indexed.iter().map(|(_, p)| p).sum();
+                    let r: f32 = {
+                        let t = std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap()
+                            .subsec_nanos();
+                        (t as f32 % 1_000_000.0) / 1_000_000.0
+                    };
+                    let mut cumulative = 0.0;
+                    let mut chosen = indexed[0].0 as i64;
+                    for (id, p) in &indexed {
+                        cumulative += p / filtered_sum;
+                        if cumulative >= r {
+                            chosen = *id as i64;
+                            break;
+                        }
+                    }
+                    chosen
+                };
 
                 if stop_tokens.contains(&(next_token_id as u32)) {
                     break;

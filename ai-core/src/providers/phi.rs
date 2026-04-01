@@ -26,11 +26,22 @@ impl Phi {
             LocalStatus::NotInstalled | LocalStatus::PartiallyInstalled => ProviderStatus::RequiresInstallation,
         };
 
+        // Read the default temperature from genai_config.json if the model is installed
+        let default_temp = if status == ProviderStatus::Ready {
+            handler
+                .read_genai_config()
+                .await
+                .map(|c| c.temperature)
+                .unwrap_or(0.7)
+        } else {
+            0.7
+        };
+
         Self {
             http_client: http_client.clone(),
             handler,
             status: RwLock::new(status),
-            temperature: RwLock::new(0.7),
+            temperature: RwLock::new(default_temp),
         }
     }
 }
@@ -66,19 +77,10 @@ impl ModelProvider for Phi {
 
     async fn setup(&self, progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>) -> Result<()> {
         let download_urls = vec![
-            // 1. The Core Graph (The "Brain" structure)
             "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/model.onnx".to_string(),
-
-            // 2. The Heavyweight Weights (The ~2.5GB file - this will take a few minutes!)
             "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/model.onnx.data".to_string(),
-
-            // 3. The Generation Config (Tells ORT the default Temperature, Top-P, etc.)
             "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/genai_config.json".to_string(),
-
-            // 4. Standard Model Config
             "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/config.json".to_string(),
-
-            // 5. The Tokenizer Files (Converts your text into NPU integers)
             "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/tokenizer.json".to_string(),
             "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/tokenizer_config.json".to_string(),
             "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/special_tokens_map.json".to_string(),
@@ -86,6 +88,11 @@ impl ModelProvider for Phi {
         ];
 
         self.handler.setup(&self.http_client, download_urls, progress_tx).await?;
+
+        // After successful install, load the default temperature from the config
+        if let Ok(config) = self.handler.read_genai_config().await {
+            *self.temperature.write().unwrap() = config.temperature;
+        }
 
         *self.status.write().unwrap() = ProviderStatus::Ready;
 
@@ -99,6 +106,14 @@ impl ModelProvider for Phi {
     ) -> Result<()> {
         self.handler.load().await?;
 
-        self.handler.ask(format!("<|system|>\nYou are a helpful AI assistant. Keep answers short and concise.<|end|>\n<|user|>\n{prompt}<|end|>\n<|assistant|>\n"), 512, tx).await
+        // Read the full generation config and override temperature with the user's current setting
+        let mut config = self.handler.read_genai_config().await.unwrap_or_default();
+        config.temperature = self.temperature();
+
+        self.handler.ask(
+            format!("<|system|>\nYou are a helpful AI assistant. Keep answers short and concise.<|end|>\n<|user|>\n{prompt}<|end|>\n<|assistant|>\n"),
+            config,
+            tx,
+        ).await
     }
 }
