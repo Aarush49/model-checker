@@ -5,6 +5,7 @@ mod orchestrator;
 
 use ai_core::ai::Models;
 use message::Message;
+use std::collections::HashSet;
 
 use dioxus::prelude::*;
 use layout::Layout;
@@ -26,6 +27,7 @@ const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 
 fn main() {
+    dotenvy::dotenv().ok();
     dioxus::launch(App);
 }
 
@@ -33,6 +35,7 @@ fn main() {
 fn App() -> Element {
     let mut models_registry = use_context_provider(|| Signal::new(Models::new()));
     let _ = use_context_provider(|| Signal::new(Vec::<Message>::new()));
+    let _ = use_context_provider(|| Signal::new(Option::<HashSet<String>>::None));
 
     use_effect(move || {
         spawn(async move {

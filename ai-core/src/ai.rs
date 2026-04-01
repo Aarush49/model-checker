@@ -78,11 +78,8 @@ impl Models {
         let mut models: Vec<Box<dyn ModelProvider>> = vec![
             Box::new(Phi::new(&http_client).await),
             Box::new(ChatGPT::new(&http_client).await),
+            Box::new(Gemini::new(&http_client).await),
         ];
-
-        if let std::result::Result::Ok(gemini) = Gemini::new(&http_client).await {
-            models.push(Box::new(gemini));
-        }
 
         Ok(Self { models })
     }

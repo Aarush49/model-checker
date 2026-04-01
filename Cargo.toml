@@ -11,6 +11,7 @@ dioxus = { version = "0.7.1", features = ["router"] }
 ai-core = { path = "./ai-core"}
 anyhow.workspace = true
 tokio = { version = "1.50.0", features = ["sync"] }
+dotenvy = "0.15"
 
 [workspace]
 members = ["ai-core"]

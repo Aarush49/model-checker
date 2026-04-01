@@ -8,20 +8,18 @@ pub fn OrchestratorPage() -> Element {
     let mut messages = use_context::<Signal<Vec<Message>>>();
     let mut prompt = use_signal(String::new);
     let models_registry = use_context::<Signal<Models>>();
-    let mut selected_models = use_signal(|| HashSet::<String>::new());
+    let mut selected_models = use_context::<Signal<Option<HashSet<String>>>>();
 
     use_effect(move || {
         let registry = models_registry.read();
-        if selected_models.read().is_empty() {
+        if selected_models.read().is_none() {
             let mut initial = HashSet::new();
             for m in registry.models.iter() {
                 if m.status() == ProviderStatus::Ready {
                     initial.insert(m.id().to_string());
                 }
             }
-            if !initial.is_empty() {
-                selected_models.set(initial);
-            }
+            selected_models.set(Some(initial));
         }
     });
 
@@ -36,7 +34,7 @@ pub fn OrchestratorPage() -> Element {
 
     let mut send_message = move || {
         let current_prompt = prompt().clone();
-        let selected = selected_models.read().clone();
+        let selected = selected_models.read().clone().unwrap_or_default();
 
         if !current_prompt.is_empty() {
             messages.write().push(Message::User {
@@ -52,20 +50,20 @@ pub fn OrchestratorPage() -> Element {
             let mut model_indices = std::collections::HashMap::new();
 
             for model_id in selected.iter() {
-                let model_name = models_registry
-                    .read()
-                    .models
-                    .iter()
-                    .find(|m| m.id() == model_id)
+                let registry = models_registry.read();
+                let model = registry.models.iter().find(|m| m.id() == model_id);
+                
+                let model_name = model
                     .map(|m| m.name().to_string())
                     .unwrap_or_else(|| "Unknown Model".to_string());
+                let is_ready = model.map(|m| m.status() == ProviderStatus::Ready).unwrap_or(false);
 
                 messages.write().push(Message::AI {
                     model_id: model_id.clone(),
                     model_name,
                     response: String::new(),
-                    error: None,
-                    is_finished: false,
+                    error: if is_ready { None } else { Some("Model requires authentication or setup in Neural Engines before use.".to_string()) },
+                    is_finished: !is_ready,
                 });
 
                 let msg_index = messages.read().len() - 1;
@@ -129,16 +127,18 @@ pub fn OrchestratorPage() -> Element {
                     for (index, (model_id, model_name, model_status)) in models_data.into_iter().enumerate() {
                         button {
                             key: "{index}",
-                            class: format!("select-none cursor-pointer flex-shrink-0 px-3 py-1.5 rounded-lg border flex items-center gap-2 text-xs font-bold font-headline transition-all duration-200 {}", if selected_models.read().contains(&model_id) { "border-primary/80 bg-primary/10 text-primary shadow-[0_0_10px_rgba(0,227,253,0.08)]" } else if model_status == ProviderStatus::Ready { "border-outline-variant/30 text-on-surface-variant hover:border-primary/40 hover:bg-surface-container-highest hover:text-on-surface" } else { "border-outline-variant/20 text-on-surface-variant/50 opacity-60" }),
+                            class: format!("select-none cursor-pointer flex-shrink-0 px-3 py-1.5 rounded-lg border flex items-center gap-2 text-xs font-bold font-headline transition-all duration-200 {}", if selected_models.read().as_ref().map(|s| s.contains(&model_id)).unwrap_or(false) { "border-primary/80 bg-primary/10 text-primary shadow-[0_0_10px_rgba(0,227,253,0.08)]" } else if model_status == ProviderStatus::Ready { "border-outline-variant/30 text-on-surface-variant hover:border-primary/40 hover:bg-surface-container-highest hover:text-on-surface" } else { "border-outline-variant/20 text-on-surface-variant/50 opacity-60" }),
                             onclick: move |_| {
-                                let mut selected = selected_models.write();
+                                let mut selected_opt = selected_models.write();
+                                let mut selected = selected_opt.clone().unwrap_or_default();
                                 if selected.contains(&model_id) {
                                     selected.remove(&model_id);
                                 } else {
                                     selected.insert(model_id.clone());
                                 }
+                                *selected_opt = Some(selected);
                             },
-                            if selected_models.read().contains(&model_id) {
+                            if selected_models.read().as_ref().map(|s| s.contains(&model_id)).unwrap_or(false) {
                                 span { class: "material-symbols-outlined text-[14px] text-primary", style: "font-variation-settings: 'FILL' 1;", "check_circle" }
                             } else {
                                 match model_status {
