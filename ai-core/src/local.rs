@@ -36,10 +36,18 @@ pub struct GenaiSearchConfig {
     pub max_length: usize,
 }
 
-fn default_temperature() -> f32 { 1.0 }
-fn default_repetition_penalty() -> f32 { 1.0 }
-fn default_top_k() -> usize { 1 }
-fn default_top_p() -> f32 { 1.0 }
+fn default_temperature() -> f32 {
+    1.0
+}
+fn default_repetition_penalty() -> f32 {
+    1.0
+}
+fn default_top_k() -> usize {
+    1
+}
+fn default_top_p() -> f32 {
+    1.0
+}
 
 impl Default for GenaiSearchConfig {
     fn default() -> Self {
@@ -94,8 +102,8 @@ impl LocalModel {
         let contents = fs::read_to_string(&config_path)
             .await
             .context(format!("Failed to read {:?}", config_path))?;
-        let config: GenaiConfig = serde_json::from_str(&contents)
-            .context("Failed to parse genai_config.json")?;
+        let config: GenaiConfig =
+            serde_json::from_str(&contents).context("Failed to parse genai_config.json")?;
         Ok(config.search)
     }
 
@@ -124,7 +132,10 @@ impl LocalModel {
         // This handles interrupted downloads, corrupted files, etc.
         let marker = self.model_dir.join(".install_complete");
         if self.model_dir.exists() && !marker.exists() {
-            println!("Detected incomplete installation at {:?}, cleaning up...", self.model_dir);
+            println!(
+                "Detected incomplete installation at {:?}, cleaning up...",
+                self.model_dir
+            );
             fs::remove_dir_all(&self.model_dir).await.ok();
         }
 
@@ -327,7 +338,11 @@ impl LocalModel {
             // PHASE 2: THE INFERENCE LOOP
             // =================================================================
             // Use max_length from config if set, otherwise fall back to a reasonable default
-            let generation_limit = if config.max_length > 0 { config.max_length } else { 512 };
+            let generation_limit = if config.max_length > 0 {
+                config.max_length
+            } else {
+                512
+            };
 
             for _ in 0..generation_limit {
                 let current_seq_len = current_input_ids.len();
@@ -436,7 +451,8 @@ impl LocalModel {
                     let probs: Vec<f32> = exps.iter().map(|&e| e / sum_exp).collect();
 
                     // Build (token_id, probability) pairs sorted by probability descending
-                    let mut indexed: Vec<(usize, f32)> = probs.iter().enumerate().map(|(i, &p)| (i, p)).collect();
+                    let mut indexed: Vec<(usize, f32)> =
+                        probs.iter().enumerate().map(|(i, &p)| (i, p)).collect();
                     indexed.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
 
                     // ── STEP D: Top-K filtering ────────────────────────────

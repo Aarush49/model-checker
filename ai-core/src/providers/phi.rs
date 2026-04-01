@@ -23,7 +23,9 @@ impl Phi {
 
         let status = match handler.status().await {
             LocalStatus::Installed => ProviderStatus::Ready,
-            LocalStatus::NotInstalled | LocalStatus::PartiallyInstalled => ProviderStatus::RequiresInstallation,
+            LocalStatus::NotInstalled | LocalStatus::PartiallyInstalled => {
+                ProviderStatus::RequiresInstallation
+            }
         };
 
         // Read the default temperature from genai_config.json if the model is installed
@@ -75,7 +77,10 @@ impl ModelProvider for Phi {
         *self.temperature.write().unwrap() = temperature;
     }
 
-    async fn setup(&self, progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>) -> Result<()> {
+    async fn setup(
+        &self,
+        progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>,
+    ) -> Result<()> {
         let download_urls = vec![
             "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/model.onnx".to_string(),
             "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/model.onnx.data".to_string(),
@@ -87,7 +92,9 @@ impl ModelProvider for Phi {
             "https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/added_tokens.json".to_string(),
         ];
 
-        self.handler.setup(&self.http_client, download_urls, progress_tx).await?;
+        self.handler
+            .setup(&self.http_client, download_urls, progress_tx)
+            .await?;
 
         // After successful install, load the default temperature from the config
         if let Ok(config) = self.handler.read_genai_config().await {

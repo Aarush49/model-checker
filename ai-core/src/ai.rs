@@ -50,7 +50,10 @@ pub trait ModelProvider {
     /// Set the current temperature for the model
     fn set_temperature(&self, _temperature: f32) {}
 
-    async fn setup(&self, progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>) -> Result<()>;
+    async fn setup(
+        &self,
+        progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>,
+    ) -> Result<()>;
 
     /// Ask the model something
     async fn ask(
@@ -75,7 +78,7 @@ impl Models {
             .user_agent("ModelChecker/1.0 (Rust reqwest)")
             .build()?;
 
-        let mut models: Vec<Box<dyn ModelProvider>> = vec![
+        let models: Vec<Box<dyn ModelProvider>> = vec![
             Box::new(Phi::new(&http_client).await),
             Box::new(ChatGPT::new(&http_client).await),
             Box::new(Gemini::new(&http_client).await),
@@ -84,7 +87,11 @@ impl Models {
         Ok(Self { models })
     }
 
-    pub async fn setup(&self, index: usize, progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>) -> Result<()> {
+    pub async fn setup(
+        &self,
+        index: usize,
+        progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>,
+    ) -> Result<()> {
         self.models
             .get(index)
             .ok_or_else(|| anyhow!("Model not found at index {}", index))?

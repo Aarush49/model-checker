@@ -52,17 +52,26 @@ pub fn OrchestratorPage() -> Element {
             for model_id in selected.iter() {
                 let registry = models_registry.read();
                 let model = registry.models.iter().find(|m| m.id() == model_id);
-                
+
                 let model_name = model
                     .map(|m| m.name().to_string())
                     .unwrap_or_else(|| "Unknown Model".to_string());
-                let is_ready = model.map(|m| m.status() == ProviderStatus::Ready).unwrap_or(false);
+                let is_ready = model
+                    .map(|m| m.status() == ProviderStatus::Ready)
+                    .unwrap_or(false);
 
                 messages.write().push(Message::AI {
                     model_id: model_id.clone(),
                     model_name,
                     response: String::new(),
-                    error: if is_ready { None } else { Some("Model requires authentication or setup in Neural Engines before use.".to_string()) },
+                    error: if is_ready {
+                        None
+                    } else {
+                        Some(
+                            "Model requires authentication or setup in Neural Engines before use."
+                                .to_string(),
+                        )
+                    },
                     is_finished: !is_ready,
                 });
 
@@ -124,37 +133,61 @@ pub fn OrchestratorPage() -> Element {
                 }
                 div { class: "max-w-7xl mx-auto px-8 pb-3",
                     div { class: "flex gap-2 overflow-x-auto pb-1 scrollbar-hide flex-wrap",
-                    for (index, (model_id, model_name, model_status)) in models_data.into_iter().enumerate() {
-                        button {
-                            key: "{index}",
-                            class: format!("select-none cursor-pointer flex-shrink-0 px-3 py-1.5 rounded-lg border flex items-center gap-2 text-xs font-bold font-headline transition-all duration-200 {}", if selected_models.read().as_ref().map(|s| s.contains(&model_id)).unwrap_or(false) { "border-primary/80 bg-primary/10 text-primary shadow-[0_0_10px_rgba(0,227,253,0.08)]" } else if model_status == ProviderStatus::Ready { "border-outline-variant/30 text-on-surface-variant hover:border-primary/40 hover:bg-surface-container-highest hover:text-on-surface" } else { "border-outline-variant/20 text-on-surface-variant/50 opacity-60" }),
-                            onclick: move |_| {
-                                let mut selected_opt = selected_models.write();
-                                let mut selected = selected_opt.clone().unwrap_or_default();
-                                if selected.contains(&model_id) {
-                                    selected.remove(&model_id);
+                        for (index , (model_id , model_name , model_status)) in models_data.into_iter().enumerate() {
+                            button {
+                                key: "{index}",
+                                class: format!(
+                                    "select-none cursor-pointer flex-shrink-0 px-3 py-1.5 rounded-lg border flex items-center gap-2 text-xs font-bold font-headline transition-all duration-200 {}",
+                                    if selected_models
+                                        .read()
+                                        .as_ref()
+                                        .map(|s| s.contains(&model_id))
+                                        .unwrap_or(false)
+                                    {
+                                        "border-primary/80 bg-primary/10 text-primary shadow-[0_0_10px_rgba(0,227,253,0.08)]"
+                                    } else if model_status == ProviderStatus::Ready {
+                                        "border-outline-variant/30 text-on-surface-variant hover:border-primary/40 hover:bg-surface-container-highest hover:text-on-surface"
+                                    } else {
+                                        "border-outline-variant/20 text-on-surface-variant/50 opacity-60"
+                                    },
+                                ),
+                                onclick: move |_| {
+                                    let mut selected_opt = selected_models.write();
+                                    let mut selected = selected_opt.clone().unwrap_or_default();
+                                    if selected.contains(&model_id) {
+                                        selected.remove(&model_id);
+                                    } else {
+                                        selected.insert(model_id.clone());
+                                    }
+                                    *selected_opt = Some(selected);
+                                },
+                                if selected_models.read().as_ref().map(|s| s.contains(&model_id)).unwrap_or(false) {
+                                    span {
+                                        class: "material-symbols-outlined text-[14px] text-primary",
+                                        style: "font-variation-settings: 'FILL' 1;",
+                                        "check_circle"
+                                    }
                                 } else {
-                                    selected.insert(model_id.clone());
+                                    match model_status {
+                                        ProviderStatus::Ready => rsx! {
+                                            span { class: "w-1.5 h-1.5 rounded-full bg-primary/50" }
+                                        },
+                                        ProviderStatus::RequiresAuth => rsx! {
+                                            span { class: "w-1.5 h-1.5 rounded-full bg-error/50" }
+                                        },
+                                        ProviderStatus::RequiresInstallation => rsx! {
+                                            span { class: "w-1.5 h-1.5 rounded-full bg-tertiary/50" }
+                                        },
+                                    }
                                 }
-                                *selected_opt = Some(selected);
-                            },
-                            if selected_models.read().as_ref().map(|s| s.contains(&model_id)).unwrap_or(false) {
-                                span { class: "material-symbols-outlined text-[14px] text-primary", style: "font-variation-settings: 'FILL' 1;", "check_circle" }
-                            } else {
-                                match model_status {
-                                    ProviderStatus::Ready => rsx!{ span { class: "w-1.5 h-1.5 rounded-full bg-primary/50" } },
-                                    ProviderStatus::RequiresAuth => rsx!{ span { class: "w-1.5 h-1.5 rounded-full bg-error/50" } },
-                                    ProviderStatus::RequiresInstallation => rsx!{ span { class: "w-1.5 h-1.5 rounded-full bg-tertiary/50" } },
-                                }
+                                "{model_name}"
                             }
-                            "{model_name}"
                         }
-                    }
-                    // Add More Button
-                    button { class: "flex-shrink-0 px-3 py-1.5 rounded-lg border border-dashed border-outline-variant/30 flex items-center gap-1.5 text-xs text-on-surface-variant hover:border-primary/50 hover:text-primary transition-all",
-                        span { class: "material-symbols-outlined text-[14px]", "add" }
-                        "Add"
-                    }
+                        // Add More Button
+                        button { class: "flex-shrink-0 px-3 py-1.5 rounded-lg border border-dashed border-outline-variant/30 flex items-center gap-1.5 text-xs text-on-surface-variant hover:border-primary/50 hover:text-primary transition-all",
+                            span { class: "material-symbols-outlined text-[14px]", "add" }
+                            "Add"
+                        }
                     }
                 }
             }
@@ -182,7 +215,7 @@ pub fn OrchestratorPage() -> Element {
                                         event.prevent_default();
                                         send_message();
                                     }
-                                }
+                                },
                             }
                             button {
                                 class: "mb-2 mr-2 w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-dim flex items-center justify-center text-on-primary shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all outline-none",
@@ -191,7 +224,7 @@ pub fn OrchestratorPage() -> Element {
                             }
                         }
                     }
-
+                
                 }
             }
         }

@@ -55,7 +55,10 @@ impl ModelProvider for ChatGPT {
         *self.temperature.write().unwrap() = temperature;
     }
 
-    async fn setup(&self, _progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>) -> Result<()> {
+    async fn setup(
+        &self,
+        _progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>,
+    ) -> Result<()> {
         let api_key = std::env::var("OPENAI_API_KEY").unwrap_or_default();
         if !api_key.is_empty() {
             *self.api_key.write().unwrap() = api_key;

@@ -18,13 +18,11 @@ impl PartialEq for InstallState {
 
 #[component]
 pub fn NeuralEnginesPage() -> Element {
-    let mut models_registry = use_context::<Signal<Models>>();
+    let models_registry = use_context::<Signal<Models>>();
 
-    let install_state = use_hook(|| {
-        InstallState {
-            store: Arc::new(Mutex::new(HashMap::new())),
-            tick: Signal::new(0u64),
-        }
+    let install_state = use_hook(|| InstallState {
+        store: Arc::new(Mutex::new(HashMap::new())),
+        tick: Signal::new(0u64),
     });
 
     // Extract model data before rsx
@@ -43,10 +41,8 @@ pub fn NeuralEnginesPage() -> Element {
         install_state.store.lock().unwrap().clone()
     };
 
-    let model_cards = models_data
-        .into_iter()
-        .enumerate()
-        .map(|(index, (model_name, model_status, model_temp))| {
+    let model_cards = models_data.into_iter().enumerate().map(
+        |(index, (model_name, model_status, model_temp))| {
             let progress_entry = progress_snapshot.get(&index).copied();
             let install_state = install_state.clone();
 
@@ -62,7 +58,8 @@ pub fn NeuralEnginesPage() -> Element {
                     models_registry,
                 }
             }
-        });
+        },
+    );
 
     rsx! {
         main { class: "ml-64 pt-12 pb-12 px-12 h-screen bg-background overflow-y-auto",
@@ -80,9 +77,7 @@ pub fn NeuralEnginesPage() -> Element {
                     }
                 }
                 // Model Grid (Bento Style)
-                div { class: "grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12",
-                    {model_cards}
-                }
+                div { class: "grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12", {model_cards} }
             }
         }
     }
@@ -118,13 +113,14 @@ fn ModelCard(
     };
 
     rsx! {
-        div {
-            class: "bg-surface-container p-8 rounded-xl flex flex-col gap-8 relative overflow-hidden group transition-all duration-300 hover:bg-surface-container-highest hover:shadow-2xl hover:border-primary/50 border border-outline-variant/10 hover:translate-y-[-4px]",
+        div { class: "bg-surface-container p-8 rounded-xl flex flex-col gap-8 relative overflow-hidden group transition-all duration-300 hover:bg-surface-container-highest hover:shadow-2xl hover:border-primary/50 border border-outline-variant/10 hover:translate-y-[-4px]",
             div { class: "absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" }
             div { class: "flex justify-between items-start z-10",
                 div {
                     h3 { class: "font-headline text-2xl font-bold truncate", "{model_name}" }
-                    p { class: "text-xs text-on-surface-variant font-medium tracking-wide uppercase", "AI PROVIDER CONFIG" }
+                    p { class: "text-xs text-on-surface-variant font-medium tracking-wide uppercase",
+                        "AI PROVIDER CONFIG"
+                    }
                 }
                 label { class: "group relative inline-flex items-center cursor-pointer",
                     input {
@@ -166,7 +162,7 @@ fn ModelCard(
                                     models_registry.write();
                                 });
                             }
-                        }
+                        },
                     }
                     div { class: "w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary ring-2 ring-primary/15 hover:ring-primary/30 transition-all" }
                 }
@@ -176,7 +172,9 @@ fn ModelCard(
             if let Some(text) = progress_text {
                 div { class: "z-10",
                     div { class: "flex justify-between items-center mb-2",
-                        span { class: "text-[10px] font-bold uppercase tracking-widest text-primary animate-pulse", "Installing..." }
+                        span { class: "text-[10px] font-bold uppercase tracking-widest text-primary animate-pulse",
+                            "Installing..."
+                        }
                         span { class: "text-[10px] font-mono text-on-surface-variant",
                             "{text}"
                         }
@@ -184,15 +182,21 @@ fn ModelCard(
                     div { class: "w-full h-2 bg-surface-container-highest rounded-full overflow-hidden",
                         div {
                             class: "h-full bg-white rounded-full transition-all duration-300",
-                            width: "{percent}%"
+                            width: "{percent}%",
                         }
                     }
                 }
             }
 
-            div { class: format!("space-y-6 z-10 {}", if model_status != ProviderStatus::Ready { "opacity-50" } else { "" }),
+            div {
+                class: format!(
+                    "space-y-6 z-10 {}",
+                    if model_status != ProviderStatus::Ready { "opacity-50" } else { "" },
+                ),
                 div {
-                    label { class: "block text-[10px] font-bold uppercase tracking-widest text-outline mb-2", "API Configuration / Setup" }
+                    label { class: "block text-[10px] font-bold uppercase tracking-widest text-outline mb-2",
+                        "API Configuration / Setup"
+                    }
                     div { class: "flex gap-2",
                         input {
                             "type": "text",
@@ -202,14 +206,18 @@ fn ModelCard(
                                 ProviderStatus::Ready => "Authenticated",
                                 ProviderStatus::RequiresAuth => "Needs Login",
                                 ProviderStatus::RequiresInstallation => "Needs Install",
-                            }
+                            },
                         }
-                        button { class: "bg-surface-container-highest px-3 py-2 rounded-lg text-xs font-bold text-on-surface hover:bg-surface-bright transition-colors", "REVEAL" }
+                        button { class: "bg-surface-container-highest px-3 py-2 rounded-lg text-xs font-bold text-on-surface hover:bg-surface-bright transition-colors",
+                            "REVEAL"
+                        }
                     }
                 }
                 div {
                     div { class: "flex justify-between items-center mb-2",
-                        label { class: "text-[10px] font-bold uppercase tracking-widest text-outline", "Temperature" }
+                        label { class: "text-[10px] font-bold uppercase tracking-widest text-outline",
+                            "Temperature"
+                        }
                         span { class: "text-xs font-mono text-secondary", "{model_temp:.2}" }
                     }
                     input {
@@ -224,11 +232,13 @@ fn ModelCard(
                                 models_registry.read().models[index].set_temperature(temp);
                                 models_registry.write();
                             }
-                        }
+                        },
                     }
                 }
                 div {
-                    label { class: "block text-[10px] font-bold uppercase tracking-widest text-outline mb-2", "Context Window" }
+                    label { class: "block text-[10px] font-bold uppercase tracking-widest text-outline mb-2",
+                        "Context Window"
+                    }
                     select { class: "w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2 text-sm text-on-surface-variant focus:border-secondary/40 outline-none appearance-none cursor-pointer",
                         option { "128k Tokens (Standard)" }
                         option { "200k Tokens (Deep Scan)" }
@@ -240,7 +250,9 @@ fn ModelCard(
                 div { class: "mt-auto z-10 pt-4",
                     div { class: "p-4 rounded-lg bg-secondary/5 border border-secondary/10 flex items-center gap-3",
                         div { class: "w-2 h-2 rounded-full bg-[#00ff9d] animate-pulse shadow-[0_0_15px_rgba(0,255,157,0.7)]" }
-                        span { class: "text-[10px] font-bold uppercase tracking-widest text-[#00ff9d]", "ACTIVE: READY" }
+                        span { class: "text-[10px] font-bold uppercase tracking-widest text-[#00ff9d]",
+                            "ACTIVE: READY"
+                        }
                     }
                 }
             }

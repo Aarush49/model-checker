@@ -1,9 +1,8 @@
 use std::sync::RwLock;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use async_trait::async_trait;
 use reqwest::Client;
-use serde::Deserialize;
 use serde_json::json;
 
 use crate::ai::{ModelProvider, ProviderStatus};
@@ -33,7 +32,6 @@ impl Gemini {
     }
 }
 
-
 #[async_trait]
 impl ModelProvider for Gemini {
     fn id(&self) -> &'static str {
@@ -51,13 +49,14 @@ impl ModelProvider for Gemini {
         *self.temperature.read().unwrap()
     }
 
-
-
     fn set_temperature(&self, temperature: f32) {
         *self.temperature.write().unwrap() = temperature;
     }
 
-    async fn setup(&self, _progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>) -> Result<()> {
+    async fn setup(
+        &self,
+        _progress_tx: Option<tokio::sync::mpsc::UnboundedSender<(u64, u64)>>,
+    ) -> Result<()> {
         let api_key = std::env::var("GEMINI_API_KEY").unwrap_or_default();
         if !api_key.is_empty() {
             *self.api_key.write().unwrap() = api_key;
@@ -89,12 +88,7 @@ impl ModelProvider for Gemini {
             }
         });
 
-        let response = self
-            .client
-            .post(&url)
-            .json(&payload)
-            .send()
-            .await?;
+        let response = self.client.post(&url).json(&payload).send().await?;
 
         if !response.status().is_success() {
             let error_text = response.text().await.unwrap_or_default();
@@ -117,7 +111,12 @@ impl ModelProvider for Gemini {
 
         let final_text = match answer {
             Some(t) => t,
-            None => return Err(anyhow::anyhow!("Gemini API structure unexpected: {}", response_data)),
+            None => {
+                return Err(anyhow::anyhow!(
+                    "Gemini API structure unexpected: {}",
+                    response_data
+                ));
+            }
         };
 
         let _ = tx.send(Ok(final_text));
