@@ -3,6 +3,8 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn Layout() -> Element {
+    let mut messages = use_context::<Signal<Vec<crate::message::Message>>>();
+
     rsx! {
         div { class: "bg-background text-on-surface font-body selection:bg-secondary/30 h-screen overflow-hidden",
             // SideNavBar
@@ -25,7 +27,11 @@ pub fn Layout() -> Element {
                     }
                 }
                 div { class: "px-4 mb-8",
-                    button { class: "w-full py-3 px-4 bg-gradient-to-r from-primary to-primary-dim text-on-primary font-bold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+                    button { 
+                        class: "w-full py-3 px-4 bg-gradient-to-r from-primary to-primary-dim text-on-primary font-bold rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 active:shadow-sm active:brightness-90 transition-all duration-200",
+                        onclick: move |_| {
+                            messages.write().clear();
+                        },
                         span { class: "material-symbols-outlined text-sm", "add" }
                         span { class: "font-label", "New Session" }
                     }

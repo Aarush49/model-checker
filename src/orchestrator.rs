@@ -196,10 +196,18 @@ pub fn OrchestratorPage() -> Element {
                 }
             }
             // Chat Area
-            div { class: "flex-1 overflow-y-auto px-8 pb-44 pt-6",
-                div { class: "max-w-4xl mx-auto space-y-8",
-                    for msg in messages() {
-                        ChatMessage { msg }
+            div { class: "flex-1 overflow-y-auto px-8 pb-44 pt-6 flex flex-col",
+                div { class: "max-w-4xl mx-auto space-y-8 w-full flex-1 flex flex-col",
+                    if messages().is_empty() {
+                        div { class: "flex-1 flex items-center justify-center",
+                            h1 { class: "text-2xl font-headline font-bold text-on-surface/50 translate-y-[-20px]",
+                                "How can I help you today?"
+                            }
+                        }
+                    } else {
+                        for msg in messages() {
+                            ChatMessage { msg }
+                        }
                     }
                 }
             }
