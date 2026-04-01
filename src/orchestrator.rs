@@ -11,15 +11,8 @@ pub fn OrchestratorPage() -> Element {
     let mut selected_models = use_context::<Signal<Option<HashSet<String>>>>();
 
     use_effect(move || {
-        let registry = models_registry.read();
         if selected_models.read().is_none() {
-            let mut initial = HashSet::new();
-            for m in registry.models.iter() {
-                if m.status() == ProviderStatus::Ready {
-                    initial.insert(m.id().to_string());
-                }
-            }
-            selected_models.set(Some(initial));
+            selected_models.set(Some(HashSet::new()));
         }
     });
 
@@ -42,6 +35,17 @@ pub fn OrchestratorPage() -> Element {
             });
 
             prompt.set(String::new());
+
+            if selected.is_empty() {
+                messages.write().push(Message::AI {
+                    model_id: "system".to_string(),
+                    model_name: "System".to_string(),
+                    response: String::new(),
+                    error: Some("No models are currently selected. Please select at least one model before sending a prompt.".to_string()),
+                    is_finished: true,
+                });
+                return;
+            }
 
             let (tx_ui, mut rx_ui) =
                 tokio::sync::mpsc::unbounded_channel::<(String, anyhow::Result<String>)>();
@@ -137,18 +141,18 @@ pub fn OrchestratorPage() -> Element {
                             button {
                                 key: "{index}",
                                 class: format!(
-                                    "select-none cursor-pointer flex-shrink-0 px-3 py-1.5 rounded-lg border flex items-center gap-2 text-xs font-bold font-headline transition-all duration-200 {}",
+                                    "select-none cursor-pointer flex-shrink-0 px-3 py-1.5 rounded-lg border flex items-center gap-2 text-xs font-headline transition-all duration-200 {}",
                                     if selected_models
                                         .read()
                                         .as_ref()
                                         .map(|s| s.contains(&model_id))
                                         .unwrap_or(false)
                                     {
-                                        "border-primary/80 bg-primary/10 text-primary shadow-[0_0_10px_rgba(0,227,253,0.08)]"
+                                        "border-primary/80 bg-primary/10 text-primary font-bold shadow-[0_0_10px_rgba(0,227,253,0.08)]"
                                     } else if model_status == ProviderStatus::Ready {
-                                        "border-outline-variant/30 text-on-surface-variant hover:border-primary/40 hover:bg-surface-container-highest hover:text-on-surface"
+                                        "border-transparent text-on-surface-variant font-normal hover:border-outline-variant/50 hover:bg-surface-container-highest hover:text-on-surface"
                                     } else {
-                                        "border-outline-variant/20 text-on-surface-variant/50 opacity-60"
+                                        "border-transparent text-on-surface-variant font-normal hover:border-outline-variant/50 hover:bg-surface-container-highest hover:text-on-surface"
                                     },
                                 ),
                                 onclick: move |_| {
