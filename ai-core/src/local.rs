@@ -36,16 +36,16 @@ pub struct GenaiSearchConfig {
     pub max_length: usize,
 }
 
-fn default_temperature() -> f32 {
+const fn default_temperature() -> f32 {
     1.0
 }
-fn default_repetition_penalty() -> f32 {
+const fn default_repetition_penalty() -> f32 {
     1.0
 }
-fn default_top_k() -> usize {
+const fn default_top_k() -> usize {
     1
 }
-fn default_top_p() -> f32 {
+const fn default_top_p() -> f32 {
     1.0
 }
 
