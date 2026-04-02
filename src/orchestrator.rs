@@ -187,11 +187,7 @@ pub fn OrchestratorPage() -> Element {
                                 "{model_name}"
                             }
                         }
-                        // Add More Button
-                        button { class: "flex-shrink-0 px-3 py-1.5 rounded-lg border border-dashed border-outline-variant/30 flex items-center gap-1.5 text-xs text-on-surface-variant hover:border-primary/50 hover:text-primary transition-all",
-                            span { class: "material-symbols-outlined text-[14px]", "add" }
-                            "Add"
-                        }
+
                     }
                 }
             }
