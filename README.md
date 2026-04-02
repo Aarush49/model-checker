@@ -1,51 +1,66 @@
-# Development
+# Model Checker
 
-Your new bare-bones project includes minimal organization with a single `main.rs` file and a few assets.
+**Model Checker** is a high-performance, multi-modal AI orchestrator and playground built with **Rust**, **Dioxus 0.7**, and **Tailwind CSS**. It enables developers and enthusiasts to interact with multiple AI models simultaneously, compare responses, and manage both local and cloud-based inference from a unified interface.
 
-```
-project/
-├─ assets/ # Any assets that are used by the app should be placed here
-├─ src/
-│  ├─ main.rs # main.rs is the entry point to your application and currently contains all components for the app
-├─ Cargo.toml # The Cargo.toml file defines the dependencies and feature flags for your project
-```
+## 🚀 Features
 
-### Automatic Tailwind (Dioxus 0.7+)
+- **Multi-Model Interaction**: Send a single prompt to multiple models (e.g., Phi-4, ChatGPT, Gemini) and see their responses side-by-side.
+- **Hybrid Compute**: Support for both local inference (via the `ai-core` local provider) and cloud-based providers.
+- **Hardware Optimized**: Built-in support for model optimizations targeting **CPU**, **GPU**, and **NPU** for maximum local performance.
+- **Real-time Streaming**: Seamlessly stream responses from all connected models with a responsive, modern UI.
+- **Extensible Architecture**: A modular `ai-core` library that makes it easy to add new model providers and compute modes.
+- **Dioxus Native Experience**: Leveraging Dioxus 0.7 for a truly cross-platform desktop experience.
 
-As of Dioxus 0.7, there no longer is a need to manually install tailwind. Simply `dx serve` and you're good to go!
+## 🛠️ Technology Stack
 
-Automatic tailwind is supported by checking for a file called `tailwind.css` in your app's manifest directory (next to Cargo.toml). To customize the file, use the dioxus.toml:
+- **Core Logic**: [Rust](https://rust-lang.org)
+- **Frontend Framework**: [Dioxus 0.7](https://dioxuslabs.com)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com)
+- **Async Runtime**: [Tokio](https://tokio.rs)
+- **AI Core**: Custom internal workspace for model management and inference abstraction.
 
-```toml
-[application]
-tailwind_input = "my.css"
-tailwind_output = "assets/out.css" # also customize the location of the out file!
-```
+## 📂 Project Structure
 
-### Tailwind Manual Install
+- `src/`: Frontend application code, including component layouts and the orchestrator UI.
+- `ai-core/`: The heart of the application, containing model provider traits, local inference logic, and cloud API integrations.
+- `models-optimization/`: specialized configurations and tools for optimizing local model execution across different hardware backends (CPU/GPU/NPU).
+- `assets/`: UI assets, styles, and static resources.
 
-To use tailwind plugins or manually customize tailwind, you can can install the Tailwind CLI and use it directly.
+## 🚦 Getting Started
 
-### Tailwind
-1. Install npm: https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
-2. Install the Tailwind CSS CLI: https://tailwindcss.com/docs/installation/tailwind-cli
-3. Run the following command in the root of the project to start the Tailwind CSS compiler:
+> [!IMPORTANT]
+> **Windows Only**: This project currently only supports Windows. Support for other platforms is not yet implemented.
 
-```bash
-npx @tailwindcss/cli -i ./input.css -o ./assets/tailwind.css --watch
-```
+### Prerequisites
 
-### Serving Your App
+- [Rust Toolchain](https://rust-lang.org/learn/get-started) (Edition 2024 recommended)
+- [Dioxus CLI](https://dioxuslabs.com/learn/0.7/getting_started) (`cargo install dioxus-cli`)
 
-Run the following command in the root of your project to start developing with the default platform:
+### Quick Start
 
-```bash
-dx serve
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/neeleshpoli/model-checker.git
+   cd model-checker
+   ```
 
-To run for a different platform, use the `--platform platform` flag. E.g.
-```bash
-dx serve --platform desktop
-```
+2. Set up your environment variables (optional, for cloud providers) in a `.env` file:
+   ```env
+   # Example .env content
+   OPENAI_API_KEY=your_key_here
+   GEMINI_API_KEY=your_key_here
+   ```
 
+3. Run the application in development mode:
+   ```bash
+   dx serve
+   ```
 
+4. For desktop execution:
+   ```bash
+   dx serve --platform desktop
+   ```
+
+## 📜 License
+
+This project is licensed under the [MIT License](LICENSE).
