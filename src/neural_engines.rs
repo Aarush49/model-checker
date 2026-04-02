@@ -141,7 +141,7 @@ fn ModelCard(
                                 let store = install_state.store.clone();
                                 spawn(async move {
                                     let mut last_update = std::time::Instant::now();
-                                    let mut latest = (0u64, 0u64);
+                                    let mut latest;
 
                                     while let Some((downloaded, total)) = rx.recv().await {
                                         latest = (downloaded, total);
