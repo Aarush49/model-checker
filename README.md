@@ -4,7 +4,7 @@
 
 ## 🚀 Features
 
-- **Multi-Model Interaction**: Send a single prompt to multiple models (e.g., Phi-4, ChatGPT, Gemini) and see their responses side-by-side.
+- **Multi-Model Interaction**: Send a single prompt to multiple models (e.g., Phi-4, Gemini) and see their responses side-by-side.
 - **Hybrid Compute**: Support for both local inference (via the `ai-core` local provider) and cloud-based providers.
 - **Hardware Optimized**: Built-in support for model optimizations targeting **CPU**, **GPU**, and **NPU** for maximum local performance.
 - **Real-time Streaming**: Seamlessly stream responses from all connected models with a responsive, modern UI.

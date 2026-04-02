@@ -3,7 +3,7 @@ use async_trait::async_trait;
 
 use std::collections::HashSet;
 
-use crate::providers::{chatgpt::ChatGPT, gemini::Gemini, phi::Phi};
+use crate::providers::{gemini::Gemini, phi::Phi};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ComputeMode {
@@ -80,7 +80,6 @@ impl Models {
 
         let models: Vec<Box<dyn ModelProvider>> = vec![
             Box::new(Phi::new(&http_client).await),
-            Box::new(ChatGPT::new(&http_client).await),
             Box::new(Gemini::new(&http_client).await),
         ];
 
