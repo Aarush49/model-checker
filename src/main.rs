@@ -36,6 +36,10 @@ fn App() -> Element {
     let mut models_registry = use_context_provider(|| Signal::new(Models::new()));
     let _ = use_context_provider(|| Signal::new(Vec::<Message>::new()));
     let _ = use_context_provider(|| Signal::new(Option::<HashSet<String>>::None));
+    // Chat history: each entry is (session_name, messages)
+    let _ = use_context_provider(|| Signal::new(Vec::<(String, Vec<Message>)>::new()));
+    // Index of the currently-loaded history session (None = fresh/new session)
+    let _ = use_context_provider(|| Signal::new(Option::<usize>::None));
 
     use_effect(move || {
         spawn(async move {
