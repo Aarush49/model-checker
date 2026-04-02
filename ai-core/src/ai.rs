@@ -106,6 +106,7 @@ impl Models {
         selected_model_ids: HashSet<String>,
         tx_ui: tokio::sync::mpsc::UnboundedSender<(String, anyhow::Result<String>)>,
     ) {
+        let mut futures = Vec::new();
         for model in self.models.iter().filter(|model| {
             model.status() == ProviderStatus::Ready && selected_model_ids.contains(model.id())
         }) {
@@ -113,6 +114,7 @@ impl Models {
                 tokio::sync::mpsc::unbounded_channel::<anyhow::Result<String>>();
             let tx_ui_clone = tx_ui.clone();
             let model_id_str = model.id().to_string();
+            let prompt_clone = prompt.clone();
 
             // Bridge task to attach Model ID to each token token
             tokio::spawn(async move {
@@ -121,9 +123,12 @@ impl Models {
                 }
             });
 
-            if let Err(e) = model.ask(&prompt, tx_model.clone()).await {
-                let _ = tx_model.send(Err(e));
-            }
+            futures.push(async move {
+                if let Err(e) = model.ask(&prompt_clone, tx_model.clone()).await {
+                    let _ = tx_model.send(Err(e));
+                }
+            });
         }
+        futures_util::future::join_all(futures).await;
     }
 }
