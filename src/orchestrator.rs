@@ -141,7 +141,7 @@ pub fn OrchestratorPage() -> Element {
                             button {
                                 key: "{index}",
                                 class: format!(
-                                    "select-none cursor-pointer flex-shrink-0 px-3 py-1.5 rounded-lg border flex items-center gap-2 text-xs font-headline transition-all duration-200 {}",
+                                    "select-none cursor-pointer flex-shrink-0 pl-2 pr-3 py-1.5 rounded-lg border flex items-center gap-1.5 text-xs font-headline transition-all duration-200 {}",
                                     if selected_models
                                         .read()
                                         .as_ref()
@@ -149,10 +149,8 @@ pub fn OrchestratorPage() -> Element {
                                         .unwrap_or(false)
                                     {
                                         "border-primary/80 bg-primary/10 text-primary font-bold shadow-[0_0_10px_rgba(0,227,253,0.08)]"
-                                    } else if model_status == ProviderStatus::Ready {
-                                        "border-transparent text-on-surface-variant font-normal hover:border-outline-variant/50 hover:bg-surface-container-highest hover:text-on-surface"
                                     } else {
-                                        "border-transparent text-on-surface-variant font-normal hover:border-outline-variant/50 hover:bg-surface-container-highest hover:text-on-surface"
+                                        "border-outline-variant/20 text-on-surface-variant font-normal hover:border-outline-variant/50 hover:bg-surface-container-highest hover:text-on-surface"
                                     },
                                 ),
                                 onclick: move |_| {
@@ -165,23 +163,25 @@ pub fn OrchestratorPage() -> Element {
                                     }
                                     *selected_opt = Some(selected);
                                 },
-                                if selected_models.read().as_ref().map(|s| s.contains(&model_id)).unwrap_or(false) {
-                                    span {
-                                        class: "material-symbols-outlined text-[14px] text-primary",
-                                        style: "font-variation-settings: 'FILL' 1;",
-                                        "check_circle"
-                                    }
-                                } else {
-                                    match model_status {
-                                        ProviderStatus::Ready => rsx! {
-                                            span { class: "w-1.5 h-1.5 rounded-full bg-primary/50" }
-                                        },
-                                        ProviderStatus::RequiresAuth => rsx! {
-                                            span { class: "w-1.5 h-1.5 rounded-full bg-error/50" }
-                                        },
-                                        ProviderStatus::RequiresInstallation => rsx! {
-                                            span { class: "w-1.5 h-1.5 rounded-full bg-tertiary/50" }
-                                        },
+                                div { class: "w-4 h-4 flex items-center justify-center shrink-0",
+                                    if selected_models.read().as_ref().map(|s| s.contains(&model_id)).unwrap_or(false) {
+                                        span {
+                                            class: "material-symbols-outlined text-[16px] text-primary",
+                                            style: "font-variation-settings: 'FILL' 1;",
+                                            "check_circle"
+                                        }
+                                    } else {
+                                        match model_status {
+                                            ProviderStatus::Ready => rsx! {
+                                                span { class: "w-1.5 h-1.5 rounded-full bg-primary/50" }
+                                            },
+                                            ProviderStatus::RequiresAuth => rsx! {
+                                                span { class: "w-1.5 h-1.5 rounded-full bg-error/50" }
+                                            },
+                                            ProviderStatus::RequiresInstallation => rsx! {
+                                                span { class: "w-1.5 h-1.5 rounded-full bg-tertiary/50" }
+                                            },
+                                        }
                                     }
                                 }
                                 "{model_name}"
