@@ -62,7 +62,7 @@ pub fn NeuralEnginesPage() -> Element {
     );
 
     rsx! {
-        main { class: "ml-64 pt-12 pb-12 px-12 h-screen bg-background overflow-y-auto",
+        main { class: "flex-1 pt-12 pb-12 px-12 bg-background overflow-y-auto",
             div { class: "max-w-7xl mx-auto",
                 // Editorial Header
                 section { class: "mb-12",

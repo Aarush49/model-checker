@@ -120,7 +120,7 @@ pub fn OrchestratorPage() -> Element {
     };
 
     rsx! {
-        main { class: "ml-64 pt-0 h-screen flex flex-col bg-surface",
+        main { class: "flex-1 flex flex-col bg-surface overflow-hidden",
             // Model Selector Row
             section { class: "shrink-0 relative z-20 bg-surface-container-low/50 border-b border-outline-variant/10",
                 div { class: "max-w-7xl mx-auto px-8 py-3",
