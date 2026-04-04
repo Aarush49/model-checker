@@ -12,6 +12,7 @@ ai-core = { path = "./ai-core"}
 anyhow.workspace = true
 tokio = { version = "1.50.0", features = ["sync"] }
 dotenvy = "0.15"
+pulldown-cmark = { version = "0.12", features = ["html"] }
 
 [workspace]
 members = ["ai-core"]
