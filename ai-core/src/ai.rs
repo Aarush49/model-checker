@@ -1,9 +1,9 @@
-use anyhow::{Ok, Result, anyhow};
+use anyhow::{Result, anyhow};
 use async_trait::async_trait;
 
 use std::collections::HashSet;
 
-use crate::providers::{gemini::Gemini, phi::Phi};
+use crate::providers::{gemini::Gemini, phi::Phi, qwen::Qwen};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ComputeMode {
@@ -80,6 +80,7 @@ impl Models {
 
         let models: Vec<Box<dyn ModelProvider>> = vec![
             Box::new(Phi::new(&http_client).await),
+            Box::new(Qwen::new(&http_client).await),
             Box::new(Gemini::new(&http_client).await),
         ];
 
