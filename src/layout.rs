@@ -1,9 +1,28 @@
 use crate::Route;
+use crate::message::Message;
 use dioxus::prelude::*;
+
+/// Derive a session name from the first user prompt in a message list.
+fn session_name_from_messages(msgs: &[Message]) -> String {
+    for msg in msgs {
+        if let Message::User { content } = msg {
+            let trimmed = content.trim();
+            if trimmed.len() > 30 {
+                return format!("{}...", &trimmed[..30]);
+            }
+            return trimmed.to_string();
+        }
+    }
+    "New Chat".to_string()
+}
 
 #[component]
 pub fn Layout() -> Element {
     let mut messages = use_context::<Signal<Vec<crate::message::Message>>>();
+    let mut chat_history =
+        use_context::<Signal<Vec<(String, Vec<crate::message::Message>)>>>();
+    let mut active_session =
+        use_context::<Signal<Option<usize>>>();
 
     rsx! {
         div { class: "bg-background text-on-surface font-body selection:bg-secondary/30 h-screen overflow-hidden",
@@ -27,30 +46,125 @@ pub fn Layout() -> Element {
                     }
                 }
                 div { class: "px-4 mb-8",
-                    button { 
+                    button {
                         class: "w-full py-3 px-4 bg-gradient-to-r from-primary to-primary-dim text-on-primary font-bold rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 active:shadow-sm active:brightness-90 transition-all duration-200",
                         onclick: move |_| {
+                            let current_msgs = messages.read().clone();
+                            if !current_msgs.is_empty() {
+                                // If we are viewing a saved session, update it in-place
+                                if let Some(idx) = *active_session.read() {
+                                    let mut history = chat_history.write();
+                                    if let Some(entry) = history.get_mut(idx) {
+                                        entry.1 = current_msgs;
+                                    }
+                                } else {
+                                    // Archive as a new session
+                                    let name = session_name_from_messages(&current_msgs);
+                                    chat_history.write().push((name, current_msgs));
+                                }
+                            }
                             messages.write().clear();
+                            active_session.set(None);
                         },
                         span { class: "material-symbols-outlined text-sm", "add" }
                         span { class: "font-label", "New Session" }
                     }
                 }
-                nav { class: "flex-1 space-y-1",
-                    Link {
-                        to: Route::OrchestratorPage {},
-                        class: "px-4 py-3 mx-2 flex items-center gap-3 transition-all duration-200 active:scale-[0.98] rounded-lg group text-[#dee5ff]/60 hover:text-[#dee5ff] hover:bg-[#141f38]",
-                        active_class: "text-[#5D3FD3] bg-[#141f38] font-bold",
-                        span { class: "material-symbols-outlined", "chat_bubble" }
-                        span { class: "font-body font-medium", "Orchestrator" }
+                nav { class: "flex-1 flex flex-col min-h-0",
+                    div { class: "space-y-1",
+                        Link {
+                            to: Route::OrchestratorPage {},
+                            class: "px-4 py-3 mx-2 flex items-center gap-3 transition-all duration-200 active:scale-[0.98] rounded-lg group text-[#dee5ff]/60 hover:text-[#dee5ff] hover:bg-[#141f38]",
+                            active_class: "text-[#5D3FD3] bg-[#141f38] font-bold",
+                            span { class: "material-symbols-outlined", "chat_bubble" }
+                            span { class: "font-body font-medium", "Orchestrator" }
+                        }
+
+                        Link {
+                            to: Route::NeuralEnginesPage {},
+                            class: "px-4 py-3 mx-2 flex items-center gap-3 transition-all duration-200 active:scale-[0.98] rounded-lg group text-[#dee5ff]/60 hover:text-[#dee5ff] hover:bg-[#141f38]",
+                            active_class: "text-[#5D3FD3] bg-[#141f38] font-bold",
+                            span { class: "material-symbols-outlined", "settings_input_component" }
+                            span { class: "font-body font-medium", "Neural Engines" }
+                        }
                     }
 
-                    Link {
-                        to: Route::NeuralEnginesPage {},
-                        class: "px-4 py-3 mx-2 flex items-center gap-3 transition-all duration-200 active:scale-[0.98] rounded-lg group text-[#dee5ff]/60 hover:text-[#dee5ff] hover:bg-[#141f38]",
-                        active_class: "text-[#5D3FD3] bg-[#141f38] font-bold",
-                        span { class: "material-symbols-outlined", "settings_input_component" }
-                        span { class: "font-body font-medium", "Neural Engines" }
+                    // ── Chat History ──────────────────────────────────
+                    if !chat_history.read().is_empty() {
+                        div { class: "mt-4 pt-4 mx-4 border-t border-outline-variant/10 flex flex-col min-h-0 flex-1",
+                            p { class: "text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/50 font-label px-2 mb-2",
+                                "History"
+                            }
+                            div { class: "overflow-y-auto flex-1 space-y-0.5 scrollbar-hide",
+                                for (index , (name , saved_msgs)) in chat_history.read().iter().enumerate().rev() {
+                                    {
+                                        let is_active = (*active_session.read()) == Some(index);
+                                        let name_clone = name.clone();
+                                        // Get the full first user prompt for tooltip
+                                        let full_prompt = saved_msgs.iter().find_map(|m| {
+                                            if let Message::User { content } = m { Some(content.clone()) } else { None }
+                                        }).unwrap_or_default();
+                                        rsx! {
+                                            div {
+                                                key: "{index}",
+                                                title: "{full_prompt}",
+                                                class: format!(
+                                                    "group/item w-full text-left px-3 py-2 rounded-lg flex items-center gap-2.5 text-xs transition-all duration-150 cursor-pointer {}",
+                                                    if is_active {
+                                                        "bg-[#141f38] text-[#dee5ff] font-semibold"
+                                                    } else {
+                                                        "text-[#dee5ff]/50 hover:text-[#dee5ff]/80 hover:bg-[#141f38]/50"
+                                                    }
+                                                ),
+                                                onclick: move |_| {
+                                                    // Save current unsaved chat before switching
+                                                    let current = messages.read().clone();
+                                                    if !current.is_empty() {
+                                                        if let Some(prev_idx) = *active_session.read() {
+                                                            // Update existing saved session
+                                                            let mut history = chat_history.write();
+                                                            if let Some(entry) = history.get_mut(prev_idx) {
+                                                                entry.1 = current;
+                                                            }
+                                                        } else {
+                                                            // Archive the current unsaved chat as a new entry
+                                                            let name = session_name_from_messages(&current);
+                                                            chat_history.write().push((name, current));
+                                                        }
+                                                    }
+                                                    // Load the clicked session
+                                                    let loaded = chat_history.read()[index].1.clone();
+                                                    messages.set(loaded);
+                                                    active_session.set(Some(index));
+                                                },
+                                                span { class: "material-symbols-outlined text-[14px] opacity-60", "forum" }
+                                                span { class: "truncate flex-1", "{name_clone}" }
+                                                // Delete button
+                                                button {
+                                                    class: "ml-auto p-0.5 rounded opacity-0 group-hover/item:opacity-100 hover:text-red-400 hover:bg-red-400/10 transition-all",
+                                                    onclick: move |evt: Event<MouseData>| {
+                                                        evt.stop_propagation();
+                                                        let current_active = *active_session.read();
+                                                        // If deleting the active session, clear the chat
+                                                        if current_active == Some(index) {
+                                                            messages.write().clear();
+                                                            active_session.set(None);
+                                                        } else if let Some(active_idx) = current_active {
+                                                            // Adjust active index if it's after the deleted one
+                                                            if active_idx > index {
+                                                                active_session.set(Some(active_idx - 1));
+                                                            }
+                                                        }
+                                                        chat_history.write().remove(index);
+                                                    },
+                                                    span { class: "material-symbols-outlined text-[12px]", "close" }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 div { class: "mt-auto pt-6 border-t border-outline-variant/10 space-y-1",

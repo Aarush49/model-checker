@@ -193,23 +193,25 @@ fn ModelCard(
                     "space-y-6 z-10 {}",
                     if model_status != ProviderStatus::Ready { "opacity-50" } else { "" },
                 ),
-                div {
-                    label { class: "block text-[10px] font-bold uppercase tracking-widest text-outline mb-2",
-                        "API Configuration / Setup"
-                    }
-                    div { class: "flex gap-2",
-                        input {
-                            "type": "text",
-                            readonly: true,
-                            class: "bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2 text-sm w-full text-on-surface-variant focus:border-secondary/40 outline-none transition-all cursor-not-allowed",
-                            value: match model_status {
-                                ProviderStatus::Ready => "Authenticated",
-                                ProviderStatus::RequiresAuth => "Needs Login",
-                                ProviderStatus::RequiresInstallation => "Needs Install",
-                            },
+                if model_name != "Phi 4" {
+                    div {
+                        label { class: "block text-[10px] font-bold uppercase tracking-widest text-outline mb-2",
+                            "API Configuration / Setup"
                         }
-                        button { class: "bg-surface-container-highest px-3 py-2 rounded-lg text-xs font-bold text-on-surface hover:bg-surface-bright transition-colors",
-                            "REVEAL"
+                        div { class: "flex gap-2",
+                            input {
+                                "type": "text",
+                                readonly: true,
+                                class: "bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2 text-sm w-full text-on-surface-variant focus:border-secondary/40 outline-none transition-all cursor-not-allowed",
+                                value: match model_status {
+                                    ProviderStatus::Ready => "Authenticated",
+                                    ProviderStatus::RequiresAuth => "Needs Login",
+                                    ProviderStatus::RequiresInstallation => "Needs Install",
+                                },
+                            }
+                            button { class: "bg-surface-container-highest px-3 py-2 rounded-lg text-xs font-bold text-on-surface hover:bg-surface-bright transition-colors",
+                                "REVEAL"
+                            }
                         }
                     }
                 }
@@ -233,16 +235,6 @@ fn ModelCard(
                                 models_registry.write();
                             }
                         },
-                    }
-                }
-                div {
-                    label { class: "block text-[10px] font-bold uppercase tracking-widest text-outline mb-2",
-                        "Context Window"
-                    }
-                    select { class: "w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2 text-sm text-on-surface-variant focus:border-secondary/40 outline-none appearance-none cursor-pointer",
-                        option { "128k Tokens (Standard)" }
-                        option { "200k Tokens (Deep Scan)" }
-                        option { "1M Tokens (Vast)" }
                     }
                 }
             }
