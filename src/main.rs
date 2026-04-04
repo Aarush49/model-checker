@@ -28,7 +28,9 @@ const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 
 fn main() {
     dotenvy::dotenv().ok();
-    dioxus::launch(App);
+    LaunchBuilder::desktop()
+        .with_cfg(dioxus::desktop::Config::new().with_menu(None))
+        .launch(App);
 }
 
 #[component]
