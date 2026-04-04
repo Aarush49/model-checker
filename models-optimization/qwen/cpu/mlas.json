@@ -1,0 +1,40 @@
+{
+    "input_model": {
+        "type": "HfModel",
+        "model_path": "Qwen/Qwen3.5-4B"
+    },
+    "systems": {
+        "target_system": {
+            "type": "LocalSystem",
+            "accelerators": [
+                {
+                    "execution_providers": [
+                        "CPUExecutionProvider"
+                    ]
+                }
+            ]
+        },
+        "host_system": {
+            "type": "LocalSystem",
+            "accelerators": [
+                {
+                    "execution_providers": [
+                        "CUDAExecutionProvider"
+                    ]
+                }
+            ]
+        }
+    },
+    "passes": {
+        "mb": {
+            "type": "ModelBuilder",
+            "precision": "int4",
+            "int4_accuracy_level": 4
+        }
+    },
+    "target": "target_system",
+    "host": "host_system",
+    "cache_dir": "cache",
+    "clean_cache": true,
+    "output_dir": "models/qwen/cpu/mlas"
+}
