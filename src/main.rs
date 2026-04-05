@@ -1,7 +1,7 @@
 mod layout;
 mod message;
 mod neural_engines;
-mod orchestrator;
+mod chat;
 
 use ai_core::ai::Models;
 use message::Message;
@@ -11,14 +11,14 @@ use dioxus::desktop::{Config, WindowBuilder};
 use dioxus::prelude::*;
 use layout::Layout;
 use neural_engines::NeuralEnginesPage;
-use orchestrator::OrchestratorPage;
+use chat::ChatPage;
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
 pub enum Route {
     #[layout(Layout)]
     #[route("/")]
-    OrchestratorPage {},
+    ChatPage {},
 
     #[route("/settings")]
     NeuralEnginesPage {},
@@ -31,8 +31,8 @@ fn main() {
     dotenvy::dotenv().ok();
 
     #[allow(unused_mut)]
-    let mut window = WindowBuilder::new()
-        .with_min_inner_size(dioxus::desktop::LogicalSize::new(1000.0, 700.0));
+    let mut window =
+        WindowBuilder::new().with_min_inner_size(dioxus::desktop::LogicalSize::new(1000.0, 700.0));
 
     #[cfg(target_os = "macos")]
     {
@@ -46,13 +46,9 @@ fn main() {
         window = window.with_decorations(false);
     }
 
-    let cfg = Config::new()
-        .with_window(window)
-        .with_menu(None);
+    let cfg = Config::new().with_window(window).with_menu(None);
 
-    LaunchBuilder::desktop()
-        .with_cfg(cfg)
-        .launch(App);
+    LaunchBuilder::desktop().with_cfg(cfg).launch(App);
 }
 
 #[component]

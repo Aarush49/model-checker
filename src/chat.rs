@@ -4,7 +4,7 @@ use dioxus::prelude::*;
 use std::collections::HashSet;
 
 #[component]
-pub fn OrchestratorPage() -> Element {
+pub fn ChatPage() -> Element {
     let mut messages = use_context::<Signal<Vec<Message>>>();
     let mut prompt = use_signal(String::new);
     let models_registry = use_context::<Signal<Models>>();
@@ -126,7 +126,7 @@ pub fn OrchestratorPage() -> Element {
                 div { class: "max-w-7xl mx-auto px-8 py-3",
                     div { class: "flex items-center justify-between",
                         h2 { class: "text-2xl font-headline font-bold text-on-surface",
-                            "Orchestrator"
+                            "Chat"
                         }
                         div { class: "flex items-center gap-2",
                             span { class: "text-xs text-on-surface-variant font-label mr-2",
@@ -232,7 +232,7 @@ pub fn OrchestratorPage() -> Element {
                             }
                         }
                     }
-                
+
                 }
             }
         }

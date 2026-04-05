@@ -20,10 +20,8 @@ fn session_name_from_messages(msgs: &[Message]) -> String {
 #[component]
 pub fn Layout() -> Element {
     let mut messages = use_context::<Signal<Vec<crate::message::Message>>>();
-    let mut chat_history =
-        use_context::<Signal<Vec<(String, Vec<crate::message::Message>)>>>();
-    let mut active_session =
-        use_context::<Signal<Option<usize>>>();
+    let mut chat_history = use_context::<Signal<Vec<(String, Vec<crate::message::Message>)>>>();
+    let mut active_session = use_context::<Signal<Option<usize>>>();
 
     rsx! {
         div { class: "bg-background text-on-surface font-body selection:bg-secondary/30 h-screen overflow-hidden flex flex-col",
@@ -77,11 +75,11 @@ pub fn Layout() -> Element {
                     nav { class: "flex-1 flex flex-col min-h-0",
                         div { class: "space-y-1",
                             Link {
-                                to: Route::OrchestratorPage {},
+                                to: Route::ChatPage {},
                                 class: "px-4 py-3 mx-2 flex items-center gap-3 transition-all duration-200 active:scale-[0.98] rounded-lg group text-[#dee5ff]/60 hover:text-[#dee5ff] hover:bg-[#141f38]",
                                 active_class: "text-[#5D3FD3] bg-[#141f38] font-bold",
                                 span { class: "material-symbols-outlined", "chat_bubble" }
-                                span { class: "font-body font-medium", "Orchestrator" }
+                                span { class: "font-body font-medium", "Chat" }
                             }
 
                             Link {
