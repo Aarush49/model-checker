@@ -85,7 +85,7 @@ fn App() -> Element {
             href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap",
             rel: "stylesheet",
         }
-        document::Title { "Lumina AI | Synthetic Curator" }
+        document::Title { "ModelCheck | AI Model Verifier" }
         Router::<Route> {}
     }
 }

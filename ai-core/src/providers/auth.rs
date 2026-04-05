@@ -83,7 +83,7 @@ impl OAuth {
 
         // Make the entry to store the refresh token securely on the user device
         let entry_name = format!("{}-refresh-token", config.provider_name);
-        let refresh_entry = Entry::new("model-checker", &entry_name)?;
+        let refresh_entry = Entry::new("modelcheck", &entry_name)?;
 
         let token = TokenState {
             token: String::new(),

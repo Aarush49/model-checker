@@ -3221,7 +3221,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "model-checker"
+name = "modelcheck"
 version = "0.1.0"
 dependencies = [
  "ai-core",

@@ -1,4 +1,4 @@
-# Model Checker
+# ModelCheck | AI Model Comparison
 
 **Model Checker** is a high-performance, multi-modal AI orchestrator and playground built with **Rust**, **Dioxus 0.7**, and **Tailwind CSS**. It enables developers and enthusiasts to interact with multiple AI models simultaneously, compare responses, and manage both local and cloud-based inference from a unified interface.
 
@@ -42,6 +42,7 @@
    ```bash
    git clone https://github.com/neeleshpoli/model-checker.git
    cd model-checker
+   # Note: The repository name remains model-checker, but the project is ModelCheck.
    ```
 
 2. Set up your environment variables (optional, for cloud providers) in a `.env` file:

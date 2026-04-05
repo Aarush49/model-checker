@@ -38,14 +38,9 @@ pub fn Layout() -> Element {
                                 "insights"
                             }
                         }
-                        div {
-                            h1 { class: "text-xl font-bold tracking-tight text-[#dee5ff] font-['Space_Grotesk']",
-                                "Lumina AI"
+                        h1 { class: "text-xl font-bold tracking-tight text-[#dee5ff] font-['Space_Grotesk']",
+                                "ModelCheck"
                             }
-                            p { class: "text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-medium",
-                                "Synthetic Curator"
-                            }
-                        }
                     }
                     div { class: "px-4 mb-8",
                         button {
@@ -239,7 +234,7 @@ fn TitleBar() -> Element {
                 } else {
                     div { class: "flex items-center gap-2",
                         span { class: "material-symbols-outlined text-[14px] text-primary/70", "insights" }
-                        span { class: "text-[10px] font-headline font-bold uppercase tracking-widest text-[#dee5ff]/40", "Lumina AI" }
+                        span { class: "text-[10px] font-headline font-bold uppercase tracking-widest text-[#dee5ff]/40", "ModelCheck" }
                     }
                 }
             }
