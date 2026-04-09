@@ -193,7 +193,7 @@ fn TitleBar() -> Element {
         move |_| window.drag()
     };
 
-    let ondblclick = {
+    let ondoubleclick = {
         let window = window.clone();
         move |_| {
             let next = !window.is_maximized();
@@ -225,7 +225,7 @@ fn TitleBar() -> Element {
         header {
             class: "h-11 flex-shrink-0 flex items-center justify-between bg-[#091328] border-b border-outline-variant/10 z-50 select-none",
             onmousedown,
-            ondblclick,
+            ondoubleclick,
 
             // PLATFORM SPECIFIC: Left side spacer or native button area
             div { class: "flex items-center pl-4 gap-2",
