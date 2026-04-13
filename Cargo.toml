@@ -40,3 +40,9 @@ required-features = ["msix"]
 
 [patch.crates-io]
 esaxx-rs = { git = "https://github.com/thewh1teagle/esaxx-rs.git", branch = "feat/dynamic-msvc-link" }
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+panic = 'abort'
