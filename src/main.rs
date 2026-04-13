@@ -24,7 +24,7 @@ pub enum Route {
     NeuralEnginesPage {},
 }
 
-const FAVICON: Asset = asset!("/assets/favicon.ico");
+const LOGO: Asset = asset!("/assets/logo.svg");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 
 fn main() {
@@ -69,7 +69,6 @@ fn App() -> Element {
     });
 
     rsx! {
-        document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: TAILWIND_CSS }
         document::Link { rel: "preconnect", href: "https://fonts.googleapis.com" }
         document::Link {

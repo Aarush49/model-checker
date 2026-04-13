@@ -31,12 +31,9 @@ pub fn Layout() -> Element {
                 // SideNavBar - Adjusting py-6 to account for title bar
                 aside { class: "w-64 flex flex-col bg-[#091328] py-8 z-40 relative",
                     div { class: "px-6 mb-8 flex items-center gap-3",
-                        div { class: "w-8 h-8 rounded bg-gradient-to-br from-primary to-primary-dim flex items-center justify-center",
-                            span {
-                                class: "material-symbols-outlined text-on-primary text-sm",
-                                style: "font-variation-settings: 'FILL' 1;",
-                                "insights"
-                            }
+                        img {
+                            src: crate::LOGO,
+                            class: "w-8 h-8 object-contain",
                         }
                         h1 { class: "text-xl font-bold tracking-tight text-[#dee5ff] font-['Space_Grotesk']",
                                 "ModelCheck"
@@ -233,7 +230,10 @@ fn TitleBar() -> Element {
                     div { class: "w-20" } // Space for native traffic lights
                 } else {
                     div { class: "flex items-center gap-2",
-                        span { class: "material-symbols-outlined text-[14px] text-primary/70", "insights" }
+                        img {
+                            src: crate::LOGO,
+                            class: "w-3.5 h-3.5 object-contain opacity-70",
+                        }
                         span { class: "text-[10px] font-headline font-bold uppercase tracking-widest text-[#dee5ff]/40", "ModelCheck" }
                     }
                 }

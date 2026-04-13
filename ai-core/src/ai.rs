@@ -79,8 +79,8 @@ impl Models {
             .build()?;
 
         let models: Vec<Box<dyn ModelProvider>> = vec![
-            Box::new(Phi::new(&http_client).await),
-            Box::new(Qwen::new(&http_client).await),
+            Box::new(Phi::new(&http_client).await?),
+            Box::new(Qwen::new(&http_client).await?),
             Box::new(Gemini::new(&http_client).await),
         ];
 

@@ -13,6 +13,12 @@ anyhow.workspace = true
 tokio = { version = "1.50.0", features = ["sync"] }
 dotenvy = "0.15"
 pulldown-cmark = { version = "0.12", features = ["html"] }
+msixbundle = { version = "1.1", optional = true }
+resvg = { version = "0.44", optional = true }
+tiny-skia = { version = "0.11", optional = true }
+
+[build-dependencies]
+anyhow.workspace = true
 
 [workspace]
 members = ["ai-core"]
@@ -25,6 +31,12 @@ default = ["desktop"]
 web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
+msix = ["desktop", "ai-core/msix", "dep:msixbundle", "dep:resvg", "dep:tiny-skia"]
+
+[[bin]]
+name = "package"
+path = "src/package.rs"
+required-features = ["msix"]
 
 [patch.crates-io]
 esaxx-rs = { git = "https://github.com/thewh1teagle/esaxx-rs.git", branch = "feat/dynamic-msvc-link" }

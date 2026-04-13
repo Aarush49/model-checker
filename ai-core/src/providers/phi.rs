@@ -18,8 +18,8 @@ pub struct Phi {
 }
 
 impl Phi {
-    pub async fn new(http_client: &reqwest::Client) -> Self {
-        let handler = LocalModel::new(ID.to_string());
+    pub async fn new(http_client: &reqwest::Client) -> Result<Self> {
+        let handler = LocalModel::new(ID.to_string())?;
 
         let status = match handler.status().await {
             LocalStatus::Installed => ProviderStatus::Ready,
@@ -39,12 +39,12 @@ impl Phi {
             0.7
         };
 
-        Self {
+        Ok(Self {
             http_client: http_client.clone(),
             handler,
             status: RwLock::new(status),
             temperature: RwLock::new(default_temp),
-        }
+        })
     }
 }
 

@@ -8,3 +8,7 @@
 
 *.env
 assets/tailwind.css
+
+build/**
+!build/**/
+!build/**/AppxManifest.xml

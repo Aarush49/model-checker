@@ -6,9 +6,8 @@ use std::{
 
 use anyhow::{Context, Result, anyhow};
 use futures_util::{StreamExt, future::join_all};
-use ndarray::{Array1, Array2, Array3, ArrayD};
+use ndarray::{Array2, Array3, ArrayD};
 use ort::{
-    ep::CPU,
     memory::{AllocationDevice, AllocatorType, MemoryInfo, MemoryType},
     value::{DynValue, Tensor},
 };
@@ -34,10 +33,18 @@ pub struct GenaiSearchConfig {
     pub max_length: usize,
 }
 
-const fn default_temperature() -> f32 { 1.0 }
-const fn default_repetition_penalty() -> f32 { 1.0 }
-const fn default_top_k() -> usize { 1 }
-const fn default_top_p() -> f32 { 1.0 }
+const fn default_temperature() -> f32 {
+    1.0
+}
+const fn default_repetition_penalty() -> f32 {
+    1.0
+}
+const fn default_top_k() -> usize {
+    1
+}
+const fn default_top_p() -> f32 {
+    1.0
+}
 
 impl Default for GenaiSearchConfig {
     fn default() -> Self {
@@ -70,18 +77,28 @@ pub enum LocalStatus {
 }
 
 impl LocalModel {
-    pub fn new(model_id: String) -> Self {
-        let mut path = dirs::data_local_dir().unwrap();
-        path.push("ModelChecker");
-        path.push("models");
+    pub fn new(model_id: String) -> Result<Self> {
+        #[cfg(feature = "msix")]
+        let local_folder = windows::Storage::ApplicationData::Current()?
+            .LocalFolder()?
+            .Path()?
+            .to_string_lossy()
+            .to_string();
+
+        #[cfg(not(feature = "msix"))]
+        let local_folder = directories::ProjectDirs::from("me", "neeleshpoli", "modelcheck")
+            .map(|dirs| dirs.data_dir().to_string_lossy().to_string())
+            .unwrap_or_else(|| std::env::current_dir().unwrap().to_string_lossy().to_string());
+
+        let mut path = PathBuf::from(local_folder);
         path.push(&model_id);
 
-        Self {
+        Ok(Self {
             model_dir: path,
             session: Arc::new(Mutex::new(None)),
             embed_session: Arc::new(Mutex::new(None)),
             tokenizer: Arc::new(Mutex::new(None)),
-        }
+        })
     }
 
     pub async fn read_genai_config(&self) -> Result<GenaiSearchConfig> {
@@ -101,7 +118,11 @@ impl LocalModel {
         if self.model_dir.join(".install_complete").exists() {
             return LocalStatus::Installed;
         }
-        let alternatives = ["model.onnx", "decoder_model_merged_q4.onnx", "model_q4.onnx"];
+        let alternatives = [
+            "model.onnx",
+            "decoder_model_merged_q4.onnx",
+            "model_q4.onnx",
+        ];
         for alt in alternatives {
             if self.model_dir.join(alt).exists() {
                 return LocalStatus::Installed;
@@ -128,23 +149,34 @@ impl LocalModel {
             let downloaded = Arc::clone(&downloaded);
             let total = Arc::clone(&total);
             let progress_tx = progress_tx.clone();
-            let file_path = self.model_dir.join(url.trim().split('/').last().unwrap_or("file.onnx"));
+            let file_path = self
+                .model_dir
+                .join(url.trim().split('/').last().unwrap_or("file.onnx"));
 
             downloads.push(tokio::spawn(async move {
                 let mut file = File::create(&file_path).await?;
                 let response = http_client.get(url).send().await?.error_for_status()?;
-                if let Some(cl) = response.content_length() { total.fetch_add(cl, std::sync::atomic::Ordering::Relaxed); }
+                if let Some(cl) = response.content_length() {
+                    total.fetch_add(cl, std::sync::atomic::Ordering::Relaxed);
+                }
                 let mut stream = response.bytes_stream();
                 while let Some(chunk) = stream.next().await {
                     let bytes = chunk?;
                     file.write_all(&bytes).await?;
-                    let current = downloaded.fetch_add(bytes.len() as u64, std::sync::atomic::Ordering::Relaxed) + bytes.len() as u64;
-                    if let Some(tx) = &progress_tx { let _ = tx.send((current, total.load(std::sync::atomic::Ordering::Relaxed))); }
+                    let current = downloaded
+                        .fetch_add(bytes.len() as u64, std::sync::atomic::Ordering::Relaxed)
+                        + bytes.len() as u64;
+                    if let Some(tx) = &progress_tx {
+                        let _ =
+                            tx.send((current, total.load(std::sync::atomic::Ordering::Relaxed)));
+                    }
                 }
                 Ok(())
             }));
         }
-        for res in join_all(downloads).await { res??; }
+        for res in join_all(downloads).await {
+            res??;
+        }
         let _ = File::create(self.model_dir.join(".install_complete")).await;
         Ok(())
     }
@@ -159,11 +191,21 @@ impl LocalModel {
             "decoder_model_merged_q4.onnx",
             "model_q4.onnx",
             "decoder_model.onnx",
-        ].iter().map(|&alt| self.model_dir.join(alt)).find(|p| p.exists())
-         .ok_or_else(|| anyhow!("No model weight found in {:?}", self.model_dir))?;
+        ]
+        .iter()
+        .map(|&alt| self.model_dir.join(alt))
+        .find(|p| p.exists())
+        .ok_or_else(|| anyhow!("No model weight found in {:?}", self.model_dir))?;
 
-        let embed_path = ["embed_tokens.onnx", "embed_tokens_q4.onnx", "embeddings.onnx", "embed.onnx"]
-            .iter().map(|&alt| self.model_dir.join(alt)).find(|p| p.exists());
+        let embed_path = [
+            "embed_tokens.onnx",
+            "embed_tokens_q4.onnx",
+            "embeddings.onnx",
+            "embed.onnx",
+        ]
+        .iter()
+        .map(|&alt| self.model_dir.join(alt))
+        .find(|p| p.exists());
 
         let tokenizer_path = self.model_dir.join("tokenizer.json");
         let session_arc = Arc::clone(&self.session);
@@ -171,8 +213,8 @@ impl LocalModel {
         let tokenizer_arc = Arc::clone(&self.tokenizer);
 
         tokio::task::spawn_blocking(move || -> Result<()> {
-            let tokenizer = Tokenizer::from_file(&tokenizer_path).map_err(|e| anyhow!("Tokenizer fail: {e}"))?;
-            let execution_providers = vec![CPU::default().build()];
+            let tokenizer = Tokenizer::from_file(&tokenizer_path)
+                .map_err(|e| anyhow!("Tokenizer fail: {e}"))?;
 
             let session = ort::session::Session::builder()
                 .map_err(|e| anyhow!("Builder error: {e}"))?
@@ -183,19 +225,24 @@ impl LocalModel {
 
             let mut embed_session = None;
             if let Some(ep_path) = embed_path {
-                embed_session = Some(ort::session::Session::builder()
-                    .map_err(|e| anyhow!("Builder error: {e}"))?
-                    .with_optimization_level(ort::session::builder::GraphOptimizationLevel::Level3)
-                    .map_err(|e| anyhow!("Opt error: {e}"))?
-                    .commit_from_file(ep_path)
-                    .map_err(|e| anyhow!("Load embed error: {e}"))?);
+                embed_session = Some(
+                    ort::session::Session::builder()
+                        .map_err(|e| anyhow!("Builder error: {e}"))?
+                        .with_optimization_level(
+                            ort::session::builder::GraphOptimizationLevel::Level3,
+                        )
+                        .map_err(|e| anyhow!("Opt error: {e}"))?
+                        .commit_from_file(ep_path)
+                        .map_err(|e| anyhow!("Load embed error: {e}"))?,
+                );
             }
 
             *tokenizer_arc.lock().unwrap() = Some(tokenizer);
             *session_arc.lock().unwrap() = Some(session);
             *embed_arc.lock().unwrap() = embed_session;
             Ok(())
-        }).await??;
+        })
+        .await??;
         Ok(())
     }
 
@@ -205,7 +252,9 @@ impl LocalModel {
         config: GenaiSearchConfig,
         tx: tokio::sync::mpsc::UnboundedSender<Result<String>>,
     ) -> Result<()> {
-        if prompt.trim().is_empty() { return Ok(()); }
+        if prompt.trim().is_empty() {
+            return Ok(());
+        }
         let session_arc = Arc::clone(&self.session);
         let embed_arc = Arc::clone(&self.embed_session);
         let tokenizer_arc = Arc::clone(&self.tokenizer);
@@ -218,10 +267,16 @@ impl LocalModel {
             let tokenizer_guard = tokenizer_arc.lock().unwrap();
             let tokenizer = tokenizer_guard.as_ref().context("No tokenizer")?;
 
-            let encoding = tokenizer.encode(prompt, true).map_err(|e| anyhow!("Tokenize fail: {e}"))?;
-            let mut current_input_ids: Vec<i64> = encoding.get_ids().iter().map(|&i| i as i64).collect();
-            let stop_tokens: Vec<u32> = vec!["<|im_end|>", "<|end|>", "<|eot_id|>", "<|endoftext|>"]
-                .into_iter().filter_map(|t| tokenizer.token_to_id(t)).collect();
+            let encoding = tokenizer
+                .encode(prompt, true)
+                .map_err(|e| anyhow!("Tokenize fail: {e}"))?;
+            let mut current_input_ids: Vec<i64> =
+                encoding.get_ids().iter().map(|&i| i as i64).collect();
+            let stop_tokens: Vec<u32> =
+                vec!["<|im_end|>", "<|end|>", "<|eot_id|>", "<|endoftext|>"]
+                    .into_iter()
+                    .filter_map(|t| tokenizer.token_to_id(t))
+                    .collect();
 
             let mut is_thinking = false;
             let mut has_started = false;
@@ -258,15 +313,25 @@ impl LocalModel {
                             real_shape = vec![1, 32, 0, 96];
                         }
                         let empty_kv = ArrayD::<f32>::zeros(real_shape);
-                        past_kv_state.insert(input_name, Tensor::from_array(empty_kv).unwrap().into_dyn());
+                        past_kv_state
+                            .insert(input_name, Tensor::from_array(empty_kv).unwrap().into_dyn());
                     }
                 }
             }
 
             let mut past_seq_len = 0;
             let mut all_historical_tokens = current_input_ids.clone();
-            let out_mem = MemoryInfo::new(AllocationDevice::CPU, 0, AllocatorType::Device, MemoryType::CPUOutput)?;
-            let limit = if config.max_length > 0 { config.max_length } else { 512 };
+            let out_mem = MemoryInfo::new(
+                AllocationDevice::CPU,
+                0,
+                AllocatorType::Device,
+                MemoryType::CPUOutput,
+            )?;
+            let limit = if config.max_length > 0 {
+                config.max_length
+            } else {
+                512
+            };
 
             for _ in 0..limit {
                 let cur_len = current_input_ids.len();
@@ -281,7 +346,11 @@ impl LocalModel {
                     eb.bind_input("input_ids", &input_d)?;
                     eb.bind_output_to_device("inputs_embeds", &out_mem)?;
                     let out = es.run_binding(&eb)?;
-                    for (n, v) in out { if n == "inputs_embeds" { keep_alive.push(v); } }
+                    for (n, v) in out {
+                        if n == "inputs_embeds" {
+                            keep_alive.push(v);
+                        }
+                    }
                     binding.bind_input("inputs_embeds", &keep_alive[0])?;
                 } else {
                     let input_i = Array2::from_shape_vec((1, cur_len), current_input_ids.clone())?;
@@ -290,8 +359,14 @@ impl LocalModel {
                     binding.bind_input("input_ids", &keep_alive[0])?;
                 }
 
-                let mask_d = Tensor::from_array(Array2::<i64>::ones((1, tot_len))).unwrap().into_dyn();
-                if session.inputs().iter().any(|i| i.name() == "attention_mask") {
+                let mask_d = Tensor::from_array(Array2::<i64>::ones((1, tot_len)))
+                    .unwrap()
+                    .into_dyn();
+                if session
+                    .inputs()
+                    .iter()
+                    .any(|i| i.name() == "attention_mask")
+                {
                     binding.bind_input("attention_mask", &mask_d)?;
                 }
                 let pos_ids_base: Vec<i64> = (past_seq_len as i64..tot_len as i64).collect();
@@ -299,14 +374,21 @@ impl LocalModel {
                 for _ in 0..3 {
                     pos_ids_triple.extend_from_slice(&pos_ids_base);
                 }
-                let pos_d = Tensor::from_array(Array3::from_shape_vec((3, 1, cur_len), pos_ids_triple)?).unwrap().into_dyn();
+                let pos_d =
+                    Tensor::from_array(Array3::from_shape_vec((3, 1, cur_len), pos_ids_triple)?)
+                        .unwrap()
+                        .into_dyn();
                 if session.inputs().iter().any(|i| i.name() == "position_ids") {
                     binding.bind_input("position_ids", &pos_d)?;
                 }
 
-                for (pn, pv) in &past_kv_state { binding.bind_input(pn.as_str(), pv)?; }
+                for (pn, pv) in &past_kv_state {
+                    binding.bind_input(pn.as_str(), pv)?;
+                }
                 binding.bind_output_to_device("logits", &out_mem)?;
-                for (_, prn) in &kv_names { binding.bind_output_to_device(prn.as_str(), &out_mem)?; }
+                for (_, prn) in &kv_names {
+                    binding.bind_output_to_device(prn.as_str(), &out_mem)?;
+                }
 
                 let mut outputs = session.run_binding(&binding)?;
                 for (pn, prn) in &kv_names {
@@ -319,41 +401,79 @@ impl LocalModel {
 
                 if config.repetition_penalty != 1.0 {
                     for (id, score) in logits.iter_mut().enumerate() {
-                        if all_historical_tokens.contains(&(id as i64)) && !stop_tokens.contains(&(id as u32)) {
-                            if *score > 0.0 { *score /= config.repetition_penalty; } else { *score *= config.repetition_penalty; }
+                        if all_historical_tokens.contains(&(id as i64))
+                            && !stop_tokens.contains(&(id as u32))
+                        {
+                            if *score > 0.0 {
+                                *score /= config.repetition_penalty;
+                            } else {
+                                *score *= config.repetition_penalty;
+                            }
                         }
                     }
                 }
 
                 let next_token_id = if config.temperature <= 1e-8 {
-                    logits.iter().enumerate().max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap()).map(|(id, _)| id as i64).unwrap()
+                    logits
+                        .iter()
+                        .enumerate()
+                        .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                        .map(|(id, _)| id as i64)
+                        .unwrap()
                 } else {
-                    for l in logits.iter_mut() { *l /= config.temperature; }
+                    for l in logits.iter_mut() {
+                        *l /= config.temperature;
+                    }
                     let max_l = logits.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
-                    let mut probs_vec: Vec<f32> = logits.iter().map(|&l| (l - max_l).exp()).collect();
+                    let mut probs_vec: Vec<f32> =
+                        logits.iter().map(|&l| (l - max_l).exp()).collect();
                     let sum_p: f32 = probs_vec.iter().sum();
-                    for p in probs_vec.iter_mut() { *p /= sum_p; }
-                    
-                    let mut indexed: Vec<(usize, f32)> = probs_vec.iter().enumerate().map(|(i, &p)| (i, p)).collect();
+                    for p in probs_vec.iter_mut() {
+                        *p /= sum_p;
+                    }
+
+                    let mut indexed: Vec<(usize, f32)> =
+                        probs_vec.iter().enumerate().map(|(i, &p)| (i, p)).collect();
                     indexed.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
-                    if config.top_k > 0 && config.top_k < indexed.len() { indexed.truncate(config.top_k); }
+                    if config.top_k > 0 && config.top_k < indexed.len() {
+                        indexed.truncate(config.top_k);
+                    }
                     if config.top_p < 1.0 && config.top_p > 0.0 {
                         let mut cum = 0.0;
                         let mut cut = indexed.len();
-                        for (i, (_, p)) in indexed.iter().enumerate() { cum += p; if cum >= config.top_p { cut = i + 1; break; } }
+                        for (i, (_, p)) in indexed.iter().enumerate() {
+                            cum += p;
+                            if cum >= config.top_p {
+                                cut = i + 1;
+                                break;
+                            }
+                        }
                         indexed.truncate(cut);
                     }
                     let f_sum: f32 = indexed.iter().map(|(_, p)| p).sum();
-                    let r = (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().subsec_nanos() as f32 % 1_000_000.0) / 1_000_000.0;
+                    let r = (std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap()
+                        .subsec_nanos() as f32
+                        % 1_000_000.0)
+                        / 1_000_000.0;
                     let mut cum_p = 0.0;
                     let mut chosen = indexed[0].0 as i64;
-                    for (id, p) in &indexed { cum_p += p / f_sum; if cum_p >= r { chosen = *id as i64; break; } }
+                    for (id, p) in &indexed {
+                        cum_p += p / f_sum;
+                        if cum_p >= r {
+                            chosen = *id as i64;
+                            break;
+                        }
+                    }
                     chosen
                 };
 
-                if stop_tokens.contains(&(next_token_id as u32)) { break; }
+                if stop_tokens.contains(&(next_token_id as u32)) {
+                    break;
+                }
                 let token_str = tokenizer.decode(&[next_token_id as u32], true).unwrap();
-                
+
                 // --- THINKING FILTER ---
                 if token_str.contains("<think>") {
                     is_thinking = true;
@@ -389,13 +509,14 @@ impl LocalModel {
                         let _ = tx.send(Ok(token_str));
                     }
                 }
-                
+
                 past_seq_len += cur_len;
                 current_input_ids = vec![next_token_id];
                 all_historical_tokens.push(next_token_id);
             }
             Ok(())
-        }).await??;
+        })
+        .await??;
         Ok(())
     }
 }
