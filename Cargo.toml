@@ -1,6 +1,6 @@
 [package]
 name = "modelcheck"
-version = "0.1.0"
+version = "1.0.1"
 authors = ["neeleshpoli <72574589+neeleshpoli@users.noreply.github.com>"]
 edition = "2024"
 

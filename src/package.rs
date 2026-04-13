@@ -67,6 +67,16 @@ fn main() -> Result<()> {
     fs::copy(&bin_src, &dest)?;
     println!("Copied binary to {}", dest.display());
 
+    // Copy Dioxus bundled assets if they exist
+    if let Some(parent) = bin_src.parent() {
+        let assets_src = parent.join("assets");
+        if assets_src.exists() && assets_src.is_dir() {
+            let assets_dest = manifest_path.join("assets");
+            println!("Copying bundled assets from {} to {}...", assets_src.display(), assets_dest.display());
+            copy_dir_all(&assets_src, &assets_dest)?;
+        }
+    }
+
     println!("Generating visual assets...");
     generate_assets(manifest_path)?;
 
@@ -95,6 +105,20 @@ fn main() -> Result<()> {
 
     println!("Success! MSIX created at: {}", msix.display());
 
+    Ok(())
+}
+
+fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result<()> {
+    fs::create_dir_all(&dst)?;
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        if ty.is_dir() {
+            copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        } else {
+            fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        }
+    }
     Ok(())
 }
 

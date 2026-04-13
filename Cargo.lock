@@ -33,7 +33,7 @@ dependencies = [
 
 [[package]]
 name = "ai-core"
-version = "0.1.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3349,7 +3349,7 @@ dependencies = [
 
 [[package]]
 name = "modelcheck"
-version = "0.1.0"
+version = "1.0.1"
 dependencies = [
  "ai-core",
  "anyhow",

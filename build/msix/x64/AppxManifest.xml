@@ -6,7 +6,7 @@
          IgnorableNamespaces="uap rescap uap10">
   <Identity Name="neeleshpoli.ModelChecker" 
             Publisher="CN=48DC3D9F-28AB-4C2E-A2A6-253945507569" 
-            Version="1.0.0.0" 
+            Version="1.0.1.0" 
             ProcessorArchitecture="x64" />
   
   <Dependencies>
