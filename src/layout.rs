@@ -172,7 +172,7 @@ pub fn Layout() -> Element {
                     }
                 }
 
-                div { class: "flex-1 relative h-full bg-surface",
+                div { class: "flex-1 relative h-full bg-surface flex flex-col min-w-0 overflow-hidden",
                     Outlet::<Route> {}
                 }
             }
